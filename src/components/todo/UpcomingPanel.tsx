@@ -54,10 +54,10 @@ export function UpcomingPanel({ tasks }: Props) {
           </div>
           <div>
             <h4 className="font-display font-semibold leading-tight">
-              {today.toLocaleDateString(undefined, { weekday: "long" })}
+              {today.toLocaleDateString("en-US", { weekday: "long" })}
             </h4>
             <p className="text-xs text-muted-foreground">
-              {today.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
+              {today.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
             </p>
           </div>
         </div>
@@ -91,7 +91,7 @@ export function UpcomingPanel({ tasks }: Props) {
               >
                 <span className="min-w-0 truncate font-medium">{t.title}</span>
                 <span className="ml-3 shrink-0 text-xs opacity-80">
-                  {new Date(t.dueDate!).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                  {new Date(t.dueDate!).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   {t.dueTime ? ` · ${t.dueTime}` : ""}
                 </span>
               </li>

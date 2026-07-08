@@ -14,6 +14,12 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   PRIORITY_META,
@@ -105,31 +111,33 @@ export function TaskCard({
             </div>
 
             <div className="flex shrink-0 items-center gap-1">
-              <IconBtn
-                active={task.pinned}
-                onClick={onPin}
-                label={task.pinned ? "Unpin" : "Pin"}
-                activeClass="text-primary"
-              >
-                <Pin className={cn("h-4 w-4", task.pinned && "fill-current")} />
-              </IconBtn>
-              <IconBtn
-                active={task.favorite}
-                onClick={onFavorite}
-                label={task.favorite ? "Unfavorite" : "Favorite"}
-                activeClass="text-warning"
-              >
-                <Star className={cn("h-4 w-4", task.favorite && "fill-current")} />
-              </IconBtn>
-              <IconBtn onClick={onEdit} label="Edit">
-                <Edit3 className="h-4 w-4" />
-              </IconBtn>
-              <IconBtn onClick={onDuplicate} label="Duplicate">
-                <Copy className="h-4 w-4" />
-              </IconBtn>
-              <IconBtn onClick={onDelete} label="Delete" activeClass="text-destructive">
-                <Trash2 className="h-4 w-4" />
-              </IconBtn>
+              <TooltipProvider>
+                <IconBtn
+                  active={task.pinned}
+                  onClick={onPin}
+                  label={task.pinned ? "Unpin" : "Pin"}
+                  activeClass="text-primary"
+                >
+                  <Pin className={cn("h-4 w-4", task.pinned && "fill-current")} />
+                </IconBtn>
+                <IconBtn
+                  active={task.favorite}
+                  onClick={onFavorite}
+                  label={task.favorite ? "Unfavorite" : "Favorite"}
+                  activeClass="text-warning"
+                >
+                  <Star className={cn("h-4 w-4", task.favorite && "fill-current")} />
+                </IconBtn>
+                <IconBtn onClick={onEdit} label="Edit">
+                  <Edit3 className="h-4 w-4" />
+                </IconBtn>
+                <IconBtn onClick={onDuplicate} label="Duplicate">
+                  <Copy className="h-4 w-4" />
+                </IconBtn>
+                <IconBtn onClick={onDelete} label="Delete" activeClass="text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </IconBtn>
+              </TooltipProvider>
             </div>
           </div>
 
@@ -188,15 +196,22 @@ function IconBtn({
   activeClass?: string;
 }) {
   return (
-    <Button
-      type="button"
-      size="icon"
-      variant="ghost"
-      onClick={onClick}
-      aria-label={label}
-      className={cn("h-8 w-8", active && activeClass)}
-    >
-      {children}
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={onClick}
+          aria-label={label}
+          className={cn("h-8 w-8", active && activeClass)}
+        >
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="rounded-lg bg-foreground text-background">
+        <p className="text-xs font-medium">{label}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }

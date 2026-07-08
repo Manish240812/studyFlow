@@ -5,11 +5,15 @@ import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import {
   BarChart3,
-  BookOpenCheck,
+  Instagram,
+  Linkedin,
+  Mail,
   Moon,
   Quote as QuoteIcon,
+  Send,
   Settings as SettingsIcon,
   Sun,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +49,7 @@ function Index() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [sort, setSort] = useState<SortKey>("due");
   const [editing, setEditing] = useState<Task | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const quote = useMemo(() => quoteOfTheDay(), []);
   const prevAllComplete = useRef(false);
 
@@ -169,34 +174,100 @@ function Index() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:py-10">
       {/* Header */}
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:flex-wrap sm:justify-between">
+      <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background/70 px-4 py-3 shadow-sm backdrop-blur sm:px-5">
         <div className="flex min-w-0 items-center gap-3">
-          <motion.div
-            initial={{ scale: 0.8, rotate: -8 }}
-            animate={{ scale: 1, rotate: 0 }}
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl gradient-primary text-primary-foreground shadow-glow"
-          >
-            <BookOpenCheck className="h-6 w-6" />
-          </motion.div>
-          <div className="min-w-0">
-            <h1 className="truncate font-display text-2xl font-bold tracking-tight sm:text-3xl">
-              Student <span className="gradient-text">To-Do</span>
-            </h1>
-            <p className="truncate text-sm text-muted-foreground">
-              Stay organized and never miss an assignment.
-            </p>
+          <div className="rounded-2xl p-1">
+            <img
+              src="/logo.png.png"
+              alt="Study Flow logo"
+              className="h-14 w-auto max-w-[240px] object-contain drop-shadow-[0_0_10px_rgba(59,130,246,0.25)]"
+            />
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={toggle}
-          aria-label="Toggle theme"
-          className="shrink-0 rounded-xl"
-        >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsProfileOpen(true)}
+            className="flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-3 py-2 shadow-sm transition hover:border-primary hover:bg-card"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-sky-500 text-sm font-semibold text-white">
+              AS
+            </div>
+            <span className="text-sm font-medium text-foreground">Profile</span>
+          </button>
+        </div>
       </header>
+
+      {isProfileOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full max-w-2xl rounded-3xl border border-border/70 bg-background p-6 shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-primary">Student Profile</p>
+                <h2 className="mt-1 text-2xl font-semibold text-foreground">Aarav Sharma</h2>
+                <p className="mt-1 text-sm text-muted-foreground">Your personal academic details are kept here for quick access.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen(false)}
+                className="rounded-full border border-border/70 p-2 text-muted-foreground transition hover:border-primary hover:text-primary"
+                aria-label="Close profile"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-border/60 bg-card/70 p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-sky-500 text-xl font-semibold text-white">
+                  AS
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-foreground">Aarav Sharma</p>
+                  <p className="text-sm text-muted-foreground">Student • Active Learner</p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-border/60 bg-background/70 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Phone</p>
+                  <p className="mt-1 text-sm text-foreground">+91 98765 43210</p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-background/70 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email</p>
+                  <p className="mt-1 text-sm text-foreground">aarav@example.com</p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-background/70 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Branch</p>
+                  <p className="mt-1 text-sm text-foreground">Computer Science</p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-background/70 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Class</p>
+                  <p className="mt-1 text-sm text-foreground">2nd Year</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+              <Button
+                variant="outline"
+                onClick={toggle}
+                className="rounded-xl border-border/70"
+              >
+                {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              </Button>
+              <Button onClick={() => setIsProfileOpen(false)} className="rounded-xl">
+                Close Profile
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Quote */}
       <motion.div
@@ -210,13 +281,15 @@ function Index() {
 
       <div className="mt-6">
         <Tabs defaultValue="tasks" className="space-y-6">
-          <TabsList className="glass h-11 rounded-xl p-1 shadow-soft">
-            <TabsTrigger value="tasks" className="rounded-lg">Tasks</TabsTrigger>
-            <TabsTrigger value="stats" className="rounded-lg">
-              <BarChart3 className="mr-1 h-4 w-4" /> Statistics
+          <TabsList className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card/50 p-1.5 shadow-sm backdrop-blur">
+            <TabsTrigger value="tasks" className="rounded-lg px-4 py-2.5 text-sm font-medium transition data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+              Tasks
             </TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-lg">
-              <SettingsIcon className="mr-1 h-4 w-4" /> Settings
+            <TabsTrigger value="stats" className="rounded-lg px-4 py-2.5 text-sm font-medium transition data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+              <BarChart3 className="mr-2 h-4 w-4" /> Statistics
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="rounded-lg px-4 py-2.5 text-sm font-medium transition data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+              <SettingsIcon className="mr-2 h-4 w-4" /> Settings
             </TabsTrigger>
           </TabsList>
 
@@ -266,6 +339,53 @@ function Index() {
                 <QuickNotes />
               </aside>
             </div>
+
+            <footer className="mt-12 rounded-3xl border border-border/60 bg-card/70 p-6 shadow-sm backdrop-blur">
+              <div className="grid gap-6 md:grid-cols-[1.2fr_0.8fr]">
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  <p className="text-base font-semibold text-foreground">About us</p>
+                  <p>
+                    Study Flow is built for students who want a calm, focused way to manage tasks,
+                    deadlines, and study routines without feeling overwhelmed.
+                  </p>
+                  <p>
+                    Follow us and connect with our community for updates, productivity tips, and support.
+                  </p>
+                </div>
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  <p className="text-base font-semibold text-foreground">Connect with us</p>
+                  <div className="flex flex-wrap gap-3">
+                    <a
+                      href="https://instagram.com/studyflow"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 text-foreground transition hover:border-primary hover:text-primary"
+                    >
+                      <Instagram className="h-4 w-4" /> Instagram
+                    </a>
+                    <a
+                      href="https://linkedin.com/company/studyflow"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 text-foreground transition hover:border-primary hover:text-primary"
+                    >
+                      <Linkedin className="h-4 w-4" /> LinkedIn
+                    </a>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" /> hello@studyflow.app
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <Send className="h-4 w-4" /> Study Flow Team
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-6 border-t border-border/60 pt-4 text-center text-xs text-muted-foreground">
+                © {new Date().getFullYear()} Study Flow · Built for focused learners.
+              </div>
+            </footer>
           </TabsContent>
 
           <TabsContent value="stats">
@@ -284,10 +404,6 @@ function Index() {
           </TabsContent>
         </Tabs>
       </div>
-
-      <footer className="mt-12 border-t border-border pt-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Student To-Do · Built for focused learners.
-      </footer>
     </div>
   );
 }

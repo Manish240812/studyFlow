@@ -82,11 +82,11 @@ export function StatsPanel({ tasks }: Props) {
 
       <ChartCard title="Tasks by priority">
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={priorityData}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="name" fontSize={12} />
-            <YAxis fontSize={12} allowDecimals={false} />
-            <Tooltip contentStyle={tooltipStyle} />
+          <BarChart data={priorityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+            <XAxis dataKey="name" fontSize={12} stroke="rgba(148, 163, 184, 0.5)" />
+            <YAxis fontSize={12} allowDecimals={false} stroke="rgba(148, 163, 184, 0.5)" />
+            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "transparent" }} />
             <Bar dataKey="value" radius={[8, 8, 0, 0]}>
               {priorityData.map((d, i) => (
                 <Cell key={i} fill={d.fill} />
@@ -98,11 +98,11 @@ export function StatsPanel({ tasks }: Props) {
 
       <ChartCard title="Tasks by subject">
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={subjectData}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="subject" fontSize={11} />
-            <YAxis fontSize={12} allowDecimals={false} />
-            <Tooltip contentStyle={tooltipStyle} />
+          <BarChart data={subjectData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+            <XAxis dataKey="subject" fontSize={11} stroke="rgba(148, 163, 184, 0.5)" />
+            <YAxis fontSize={12} allowDecimals={false} stroke="rgba(148, 163, 184, 0.5)" />
+            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "transparent" }} />
             <Bar dataKey="count" fill="var(--primary)" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -110,11 +110,11 @@ export function StatsPanel({ tasks }: Props) {
 
       <ChartCard title="Productivity — last 7 days">
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={weekData}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="day" fontSize={12} />
-            <YAxis fontSize={12} allowDecimals={false} />
-            <Tooltip contentStyle={tooltipStyle} />
+          <BarChart data={weekData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+            <XAxis dataKey="day" fontSize={12} stroke="rgba(148, 163, 184, 0.5)" />
+            <YAxis fontSize={12} allowDecimals={false} stroke="rgba(148, 163, 184, 0.5)" />
+            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "transparent" }} />
             <Bar dataKey="completed" fill="var(--primary-glow)" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -124,10 +124,12 @@ export function StatsPanel({ tasks }: Props) {
 }
 
 const tooltipStyle: React.CSSProperties = {
-  background: "var(--popover)",
-  border: "1px solid var(--border)",
+  background: "rgba(15, 23, 42, 0.9)",
+  border: "1px solid rgba(148, 163, 184, 0.2)",
   borderRadius: "0.75rem",
   fontSize: 12,
+  padding: "8px 12px",
+  color: "#e2e8f0",
 };
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
