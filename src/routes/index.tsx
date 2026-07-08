@@ -50,6 +50,9 @@ function Index() {
   const [sort, setSort] = useState<SortKey>("due");
   const [editing, setEditing] = useState<Task | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewFilter, setPreviewFilter] = useState<FilterKey>("all");
   const quote = useMemo(() => quoteOfTheDay(), []);
   const prevAllComplete = useRef(false);
 
@@ -188,6 +191,8 @@ function Index() {
           <button
             type="button"
             onClick={() => setIsProfileOpen(true)}
+            title="Profile & Settings"
+            aria-label="Profile and settings"
             className="flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-3 py-2 shadow-sm transition hover:border-primary hover:bg-card"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-sky-500 text-sm font-semibold text-white">
@@ -253,17 +258,119 @@ function Index() {
             </div>
 
             <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-              <Button
-                variant="outline"
-                onClick={toggle}
-                className="rounded-xl border-border/70"
-              >
-                {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
-                {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsProfileOpen(false);
+                    setIsSettingsOpen(true);
+                  }}
+                  className="rounded-xl border-border/70"
+                >
+                  <SettingsIcon className="mr-2 h-4 w-4" />
+                  Open Settings
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={toggle}
+                  className="rounded-xl border-border/70"
+                >
+                  {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                  {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                </Button>
+              </div>
               <Button onClick={() => setIsProfileOpen(false)} className="rounded-xl">
                 Close Profile
               </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {isSettingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 py-6 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl border border-border/70 bg-background p-6 shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-primary">Settings</p>
+                <h2 className="mt-1 text-2xl font-semibold text-foreground">Preferences & controls</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(false)}
+                className="rounded-full border border-border/70 p-2 text-muted-foreground transition hover:border-primary hover:text-primary"
+                aria-label="Close settings"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mt-6">
+              <SettingsPanel
+                settings={settings}
+                setSettings={setSettings}
+                theme={theme}
+                toggleTheme={toggle}
+              />
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {isPreviewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 py-6 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-border/70 bg-background p-6 shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-primary">Task preview</p>
+                <h2 className="mt-1 text-2xl font-semibold text-foreground">{previewFilter === "all" ? "All tasks" : previewFilter === "completed" ? "Completed tasks" : previewFilter === "pending" ? "Pending tasks" : previewFilter === "overdue" ? "Overdue tasks" : "Task preview"}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">Review tasks directly from the dashboard without changing the page filters.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPreviewOpen(false)}
+                className="rounded-full border border-border/70 p-2 text-muted-foreground transition hover:border-primary hover:text-primary"
+                aria-label="Close preview"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <TaskList
+                tasks={tasks.filter((t) => {
+                  switch (previewFilter) {
+                    case "pending":
+                      return !t.completed;
+                    case "completed":
+                      return t.completed;
+                    case "overdue":
+                      return isOverdue(t);
+                    default:
+                      return true;
+                  }
+                })}
+                allTasks={tasks}
+                setAllTasks={setAllTasks}
+                onToggle={onToggle}
+                onDelete={onDelete}
+                onEdit={(t) => {
+                  setEditing(t);
+                  setIsPreviewOpen(false);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                onDuplicate={onDuplicate}
+                onPin={onPin}
+                onFavorite={onFavorite}
+              />
             </div>
           </motion.div>
         </div>
@@ -280,16 +387,13 @@ function Index() {
       </motion.div>
 
       <div className="mt-6">
-        <Tabs defaultValue="tasks" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card/50 p-1.5 shadow-sm backdrop-blur">
             <TabsTrigger value="tasks" className="rounded-lg px-4 py-2.5 text-sm font-medium transition data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
               Tasks
             </TabsTrigger>
             <TabsTrigger value="stats" className="rounded-lg px-4 py-2.5 text-sm font-medium transition data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
               <BarChart3 className="mr-2 h-4 w-4" /> Statistics
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-lg px-4 py-2.5 text-sm font-medium transition data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
-              <SettingsIcon className="mr-2 h-4 w-4" /> Settings
             </TabsTrigger>
           </TabsList>
 
@@ -299,6 +403,10 @@ function Index() {
               streak={streak}
               completedToday={completedToday}
               dailyGoal={settings.dailyGoal}
+              onCardSelect={(filter) => {
+                setPreviewFilter(filter);
+                setIsPreviewOpen(true);
+              }}
             />
 
             <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -392,16 +500,6 @@ function Index() {
             <StatsPanel tasks={tasks} />
           </TabsContent>
 
-          <TabsContent value="settings">
-            <SettingsPanel
-              tasks={tasks}
-              setAllTasks={setAllTasks}
-              settings={settings}
-              setSettings={setSettings}
-              theme={theme}
-              toggleTheme={toggle}
-            />
-          </TabsContent>
         </Tabs>
       </div>
     </div>

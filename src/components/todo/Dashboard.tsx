@@ -3,12 +3,14 @@ import { CheckCircle2, Circle, Clock, ListTodo, AlertTriangle, Flame, Target } f
 import { Progress } from "@/components/ui/progress";
 import type { Task } from "@/lib/todo/types";
 import { isOverdue } from "@/lib/todo/types";
+import type { FilterKey } from "./FiltersBar";
 
 interface Props {
   tasks: Task[];
   streak: number;
   completedToday: number;
   dailyGoal: number;
+  onCardSelect?: (filter: FilterKey) => void;
 }
 
 export function Dashboard({ tasks, streak, completedToday, dailyGoal }: Props) {
@@ -20,22 +22,25 @@ export function Dashboard({ tasks, streak, completedToday, dailyGoal }: Props) {
   const goalPct = Math.min(100, Math.round((completedToday / Math.max(1, dailyGoal)) * 100));
 
   const cards = [
-    { label: "Total", value: total, icon: ListTodo, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Completed", value: completed, icon: CheckCircle2, color: "text-success", bg: "bg-success/10" },
-    { label: "Pending", value: pending, icon: Circle, color: "text-warning", bg: "bg-warning/15" },
-    { label: "Overdue", value: overdue, icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10" },
+    { label: "Total", value: total, icon: ListTodo, color: "text-primary", bg: "bg-primary/10", filter: "all" as const },
+    { label: "Completed", value: completed, icon: CheckCircle2, color: "text-success", bg: "bg-success/10", filter: "completed" as const },
+    { label: "Pending", value: pending, icon: Circle, color: "text-warning", bg: "bg-warning/15", filter: "pending" as const },
+    { label: "Overdue", value: overdue, icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10", filter: "overdue" as const },
   ];
 
   return (
     <section className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {cards.map((c, i) => (
-          <motion.div
+          <motion.button
             key={c.label}
+            type="button"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="glass rounded-2xl p-4 sm:p-5 shadow-soft"
+            onClick={() => onCardSelect?.(c.filter)}
+            aria-label={`Show ${c.label} tasks`}
+            className="glass rounded-2xl p-4 sm:p-5 shadow-soft text-left transition hover:-translate-y-0.5 hover:bg-background/70 cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -50,7 +55,7 @@ export function Dashboard({ tasks, streak, completedToday, dailyGoal }: Props) {
                 <c.icon className={`h-5 w-5 ${c.color}`} />
               </div>
             </div>
-          </motion.div>
+          </motion.button>
         ))}
       </div>
 
