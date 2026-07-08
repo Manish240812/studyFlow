@@ -1,0 +1,140 @@
+import { useMemo } from "react";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
+import { SUBJECTS, type Task } from "@/lib/todo/types";
+
+interface Props {
+  tasks: Task[];
+}
+
+const CHART_COLORS = [
+  "hsl(var(--chart-1, 220 90% 60%))",
+];
+
+export function StatsPanel({ tasks }: Props) {
+  const completed = tasks.filter((t) => t.completed).length;
+  const pending = tasks.length - completed;
+
+  const pieData = [
+    { name: "Completed", value: completed, fill: "var(--success)" },
+    { name: "Pending", value: pending, fill: "var(--primary)" },
+  ];
+
+  const subjectData = useMemo(
+    () =>
+      SUBJECTS.map((s) => ({
+        subject: s.length > 6 ? s.slice(0, 6) + "…" : s,
+        count: tasks.filter((t) => t.subject === s).length,
+      })).filter((d) => d.count > 0),
+    [tasks],
+  );
+
+  const priorityData = [
+    { name: "High", value: tasks.filter((t) => t.priority === "high").length, fill: "var(--destructive)" },
+    { name: "Medium", value: tasks.filter((t) => t.priority === "medium").length, fill: "var(--warning)" },
+    { name: "Low", value: tasks.filter((t) => t.priority === "low").length, fill: "var(--success)" },
+  ];
+
+  const weekData = useMemo(() => {
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const key = d.toISOString().slice(0, 10);
+      return {
+        day: d.toLocaleDateString(undefined, { weekday: "short" }),
+        key,
+        completed: 0,
+      };
+    });
+    tasks.forEach((t) => {
+      if (!t.completed || !t.completedAt) return;
+      const k = t.completedAt.slice(0, 10);
+      const day = days.find((d) => d.key === k);
+      if (day) day.completed++;
+    });
+    return days;
+  }, [tasks]);
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <ChartCard title="Completed vs Pending">
+        <ResponsiveContainer width="100%" height={220}>
+          <PieChart>
+            <Pie data={pieData} dataKey="value" innerRadius={50} outerRadius={80} paddingAngle={4}>
+              {pieData.map((d, i) => (
+                <Cell key={i} fill={d.fill} />
+              ))}
+            </Pie>
+            <Tooltip contentStyle={tooltipStyle} />
+          </PieChart>
+        </ResponsiveContainer>
+      </ChartCard>
+
+      <ChartCard title="Tasks by priority">
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={priorityData}>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+            <XAxis dataKey="name" fontSize={12} />
+            <YAxis fontSize={12} allowDecimals={false} />
+            <Tooltip contentStyle={tooltipStyle} />
+            <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+              {priorityData.map((d, i) => (
+                <Cell key={i} fill={d.fill} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartCard>
+
+      <ChartCard title="Tasks by subject">
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={subjectData}>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+            <XAxis dataKey="subject" fontSize={11} />
+            <YAxis fontSize={12} allowDecimals={false} />
+            <Tooltip contentStyle={tooltipStyle} />
+            <Bar dataKey="count" fill="var(--primary)" radius={[8, 8, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartCard>
+
+      <ChartCard title="Productivity — last 7 days">
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={weekData}>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+            <XAxis dataKey="day" fontSize={12} />
+            <YAxis fontSize={12} allowDecimals={false} />
+            <Tooltip contentStyle={tooltipStyle} />
+            <Bar dataKey="completed" fill="var(--primary-glow)" radius={[8, 8, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartCard>
+    </div>
+  );
+}
+
+const tooltipStyle: React.CSSProperties = {
+  background: "var(--popover)",
+  border: "1px solid var(--border)",
+  borderRadius: "0.75rem",
+  fontSize: 12,
+};
+
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="glass rounded-2xl p-5 shadow-soft">
+      <h4 className="mb-3 font-display text-sm font-semibold">{title}</h4>
+      {children}
+    </div>
+  );
+}
