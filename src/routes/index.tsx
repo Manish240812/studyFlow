@@ -1,3 +1,9 @@
+import { AppHeader } from "@/components/todo/AppHeader";
+import { ProfileModal } from "@/components/todo/ProfileModal";
+import { SettingsModal } from "@/components/todo/SettingsModal";
+import { TaskPreviewModal } from "@/components/todo/TaskPreviewModal";
+import { QuoteBanner } from "@/components/todo/QuoteBanner";
+import { AppFooter } from "@/components/todo/AppFooter";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
@@ -84,17 +90,10 @@ function Index() {
   const [sort, setSort] = useState<SortKey>("due");
   const [editing, setEditing] = useState<Task | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "tasks" | "calendar" | "budget" | "stats" | "resources"
+    "tasks" | "calendar" | "budget" | "stats" | "resources" | "focus"
   >("tasks");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [profileForm, setProfileForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    branch: "",
-    className: "",
-  });
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewFilter, setPreviewFilter] = useState<FilterKey>("all");
@@ -113,33 +112,6 @@ function Index() {
       .toUpperCase();
   }, [profile?.name]);
 
-  const handleStartEditProfile = () => {
-    if (profile) {
-      setProfileForm({
-        name: profile.name,
-        email: profile.email,
-        phone: profile.phone,
-        branch: profile.branch,
-        className: profile.className,
-      });
-    }
-    setIsEditingProfile(true);
-  };
-
-  const handleSaveProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profileForm.name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
-    if (!profileForm.email.includes("@")) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-    setProfile(profileForm);
-    setIsEditingProfile(false);
-    toast.success("Profile updated successfully!");
-  };
 
   const updateTaskAndSyncLogs = useCallback(
     (id: string, patch: Partial<Task>) => {
@@ -397,419 +369,54 @@ function Index() {
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="mx-auto max-w-7xl px-4 py-6 sm:py-10"
         >
-          {/* Header */}
-          <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background/70 px-4 py-3 shadow-sm backdrop-blur sm:px-5">
-            <div className="flex min-w-0 items-center gap-3">
-              <button
-                type="button"
-                onClick={scrollToHome}
-                className="min-w-0 text-left transition hover:opacity-90"
-                aria-label="Go to home"
-              >
-                <div className="flex items-center gap-1 text-2xl tracking-tight">
-                  <span className="font-semibold text-foreground">Study</span>
-                  <span className="font-bold text-primary">Flow</span>
-                </div>
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              {/* Paintbrush Theme Selector Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    title="Change Theme"
-                    className="h-9 w-9 rounded-full border-border/70 bg-card/80 shadow-sm transition hover:border-primary hover:text-primary hover:bg-card cursor-pointer"
-                  >
-                    <Palette className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-48 rounded-xl glass p-1.5 shadow-lg border border-border/50"
-                >
-                  <DropdownMenuItem
-                    onClick={() => setTheme("dark")}
-                    className={cn(
-                      "rounded-lg px-2.5 py-2 text-xs font-semibold cursor-pointer transition hover:bg-secondary/60",
-                      theme === "dark" && "bg-primary/10 text-primary",
-                    )}
-                  >
-                    🌙 Midnight Default
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("cyberpunk")}
-                    className={cn(
-                      "rounded-lg px-2.5 py-2 text-xs font-semibold cursor-pointer transition hover:bg-secondary/60",
-                      theme === "cyberpunk" && "bg-primary/10 text-primary",
-                    )}
-                  >
-                    🧪 Cyberpunk Neon
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("emerald")}
-                    className={cn(
-                      "rounded-lg px-2.5 py-2 text-xs font-semibold cursor-pointer transition hover:bg-secondary/60",
-                      theme === "emerald" && "bg-primary/10 text-primary",
-                    )}
-                  >
-                    🌲 Emerald Sage
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("sunset")}
-                    className={cn(
-                      "rounded-lg px-2.5 py-2 text-xs font-semibold cursor-pointer transition hover:bg-secondary/60",
-                      theme === "sunset" && "bg-primary/10 text-primary",
-                    )}
-                  >
-                    🌅 Sunset Breeze
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("ocean")}
-                    className={cn(
-                      "rounded-lg px-2.5 py-2 text-xs font-semibold cursor-pointer transition hover:bg-secondary/60",
-                      theme === "ocean" && "bg-primary/10 text-primary",
-                    )}
-                  >
-                    🌊 Deep Ocean
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("light")}
-                    className={cn(
-                      "rounded-lg px-2.5 py-2 text-xs font-semibold cursor-pointer transition hover:bg-secondary/60",
-                      theme === "light" && "bg-primary/10 text-primary",
-                    )}
-                  >
-                    ☀ Light Aura
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          <AppHeader
+            scrollToHome={scrollToHome}
+            theme={theme}
+            setTheme={setTheme}
+            initials={initials}
+            onOpenProfile={() => setIsProfileOpen(true)}
+          />
 
-              <button
-                type="button"
-                onClick={() => setIsProfileOpen(true)}
-                title="Profile & Settings"
-                aria-label="Profile and settings"
-                className="flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-3 py-2 shadow-sm transition hover:border-primary hover:bg-card cursor-pointer"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-sky-500 text-sm font-semibold text-white">
-                  {initials}
-                </div>
-                <span className="text-sm font-medium text-foreground">Profile</span>
-              </button>
-            </div>
-          </header>
+          <ProfileModal
+            isOpen={isProfileOpen}
+            onClose={() => setIsProfileOpen(false)}
+            profile={profile}
+            setProfile={setProfile}
+            initials={initials}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+          />
 
-          {isProfileOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 backdrop-blur-sm">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="w-full max-w-2xl rounded-3xl border border-border/70 bg-background p-6 shadow-2xl"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-primary">Student Profile</p>
-                    <h2 className="mt-1 text-2xl font-semibold text-foreground">
-                      {profile?.name || "Student"}
-                    </h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Your personal academic details are kept here for quick access.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      setIsEditingProfile(false);
-                    }}
-                    className="rounded-full border border-border/70 p-2 text-muted-foreground transition hover:border-primary hover:text-primary"
-                    aria-label="Close profile"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
+          <SettingsModal
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            settings={settings}
+            setSettings={setSettings}
+          />
 
-                {isEditingProfile ? (
-                  <form onSubmit={handleSaveProfile} className="space-y-4 mt-6">
-                    <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="profName">Name *</Label>
-                        <Input
-                          id="profName"
-                          value={profileForm.name}
-                          onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                          placeholder="Your Name"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="profEmail">Email *</Label>
-                        <Input
-                          id="profEmail"
-                          type="email"
-                          value={profileForm.email}
-                          onChange={(e) =>
-                            setProfileForm({ ...profileForm, email: e.target.value })
-                          }
-                          placeholder="your.email@example.com"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="profPhone">Phone Number *</Label>
-                        <Input
-                          id="profPhone"
-                          value={profileForm.phone}
-                          onChange={(e) =>
-                            setProfileForm({ ...profileForm, phone: e.target.value })
-                          }
-                          placeholder="e.g. +91 98765 43210"
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                          <Label htmlFor="profBranch">Branch</Label>
-                          <Input
-                            id="profBranch"
-                            value={profileForm.branch}
-                            onChange={(e) =>
-                              setProfileForm({ ...profileForm, branch: e.target.value })
-                            }
-                            placeholder="e.g. Computer Science"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label htmlFor="profClass">Class / Year</Label>
-                          <Input
-                            id="profClass"
-                            value={profileForm.className}
-                            onChange={(e) =>
-                              setProfileForm({ ...profileForm, className: e.target.value })
-                            }
-                            placeholder="e.g. 2nd Year"
-                          />
-                        </div>
-                      </div>
-                    </div>
+          <TaskPreviewModal
+            isOpen={isPreviewOpen}
+            onClose={() => setIsPreviewOpen(false)}
+            previewFilter={previewFilter}
+            tasks={tasks}
+            setAllTasks={setAllTasks}
+            onToggle={onToggle}
+            onDelete={onDelete}
+            onEdit={(t) => {
+              setEditing(t);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            onDuplicate={onDuplicate}
+            onPin={onPin}
+            onFavorite={onFavorite}
+          />
 
-                    <div className="mt-6 flex justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setIsEditingProfile(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        className="gradient-primary text-primary-foreground shadow-glow"
-                      >
-                        Save Profile
-                      </Button>
-                    </div>
-                  </form>
-                ) : (
-                  <>
-                    <div className="mt-6 rounded-2xl border border-border/60 bg-card/70 p-5">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-sky-500 text-xl font-semibold text-white">
-                          {initials}
-                        </div>
-                        <div>
-                          <p className="text-lg font-semibold text-foreground">{profile?.name}</p>
-                          <p className="text-sm text-muted-foreground">Student • Active Learner</p>
-                        </div>
-                      </div>
-
-                      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                        <div className="rounded-xl border border-border/60 bg-background/70 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Phone
-                          </p>
-                          <p className="mt-1 text-sm text-foreground">{profile?.phone}</p>
-                        </div>
-                        <div className="rounded-xl border border-border/60 bg-background/70 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Email
-                          </p>
-                          <p className="mt-1 text-sm text-foreground">{profile?.email}</p>
-                        </div>
-                        <div className="rounded-xl border border-border/60 bg-background/70 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Branch
-                          </p>
-                          <p className="mt-1 text-sm text-foreground">
-                            {profile?.branch || "Not Specified"}
-                          </p>
-                        </div>
-                        <div className="rounded-xl border border-border/60 bg-background/70 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Class
-                          </p>
-                          <p className="mt-1 text-sm text-foreground">
-                            {profile?.className || "Not Specified"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={handleStartEditProfile}
-                          className="rounded-xl border-border/70"
-                        >
-                          <Edit2 className="mr-2 h-4 w-4" />
-                          Edit Profile
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setIsProfileOpen(false);
-                            setIsSettingsOpen(true);
-                          }}
-                          className="rounded-xl border-border/70"
-                        >
-                          <SettingsIcon className="mr-2 h-4 w-4" />
-                          Open Settings
-                        </Button>
-                      </div>
-                      <Button
-                        onClick={() => {
-                          setIsProfileOpen(false);
-                          setIsEditingProfile(false);
-                        }}
-                        className="rounded-xl"
-                      >
-                        Close Profile
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            </div>
-          )}
-
-          {isSettingsOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 py-6 backdrop-blur-sm">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl border border-border/70 bg-background p-6 shadow-2xl"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-primary">Settings</p>
-                    <h2 className="mt-1 text-2xl font-semibold text-foreground">
-                      Preferences & controls
-                    </h2>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsSettingsOpen(false)}
-                    className="rounded-full border border-border/70 p-2 text-muted-foreground transition hover:border-primary hover:text-primary"
-                    aria-label="Close settings"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-
-                <div className="mt-6">
-                  <SettingsPanel settings={settings} setSettings={setSettings} />
-                </div>
-              </motion.div>
-            </div>
-          )}
-
-          {isPreviewOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 py-6 backdrop-blur-sm">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-border/70 bg-background p-6 shadow-2xl"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-primary">Task preview</p>
-                    <h2 className="mt-1 text-2xl font-semibold text-foreground">
-                      {previewFilter === "all"
-                        ? "All tasks"
-                        : previewFilter === "completed"
-                          ? "Completed tasks"
-                          : previewFilter === "pending"
-                            ? "Pending tasks"
-                            : previewFilter === "overdue"
-                              ? "Overdue tasks"
-                              : "Task preview"}
-                    </h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Review tasks directly from the dashboard without changing the page filters.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsPreviewOpen(false)}
-                    className="rounded-full border border-border/70 p-2 text-muted-foreground transition hover:border-primary hover:text-primary"
-                    aria-label="Close preview"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-
-                <div className="mt-6 space-y-4">
-                  <TaskList
-                    tasks={tasks.filter((t) => {
-                      switch (previewFilter) {
-                        case "pending":
-                          return !t.completed;
-                        case "completed":
-                          return t.completed;
-                        case "overdue":
-                          return isOverdue(t);
-                        default:
-                          return true;
-                      }
-                    })}
-                    allTasks={tasks}
-                    setAllTasks={setAllTasks}
-                    onToggle={onToggle}
-                    onDelete={onDelete}
-                    onEdit={(t) => {
-                      setEditing(t);
-                      setIsPreviewOpen(false);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }}
-                    onDuplicate={onDuplicate}
-                    onPin={onPin}
-                    onFavorite={onFavorite}
-                  />
-                </div>
-              </motion.div>
-            </div>
-          )}
-
-          {/* Quote */}
-          <motion.div
-            key={quoteIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-            className="mt-5 flex items-start gap-2 rounded-2xl border border-border bg-secondary/40 p-3 text-sm italic text-muted-foreground"
-          >
-            <QuoteIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <span>{QUOTES[quoteIndex]}</span>
-          </motion.div>
+          <QuoteBanner quoteIndex={quoteIndex} />
 
           <div className="mt-6">
             <Tabs
               value={activeTab}
               onValueChange={(v) =>
-                setActiveTab(v as "tasks" | "calendar" | "budget" | "stats" | "resources" | "focus")
+                setActiveTab(v as "tasks" | "calendar" | "budget" | "stats" | "resources" | "focus" | "focus")
               }
               className="space-y-6"
             >
@@ -908,75 +515,13 @@ function Index() {
                     </aside>
                   </div>
 
-                  <footer className="mt-12 rounded-3xl border border-border/60 bg-card/70 p-6 shadow-sm backdrop-blur">
-                    <div className="grid gap-6 md:grid-cols-[1.2fr_0.8fr]">
-                      <div className="space-y-4 text-sm text-muted-foreground">
-                        <button
-                          type="button"
-                          onClick={scrollToHome}
-                          className="text-left transition hover:opacity-90"
-                          aria-label="Go to home"
-                        >
-                          <div className="flex items-center gap-1 text-2xl tracking-tight">
-                            <span className="font-semibold text-foreground">Study</span>
-                            <span className="font-bold text-primary">Flow</span>
-                          </div>
-                        </button>
-                        <p>
-                          Study Flow is built for students who want a calm, focused way to manage
-                          tasks, deadlines, and study routines without feeling overwhelmed.
-                        </p>
-                        <p>
-                          Follow us and connect with our community for updates, productivity tips,
-                          and support.
-                        </p>
-                      </div>
-                      <div className="space-y-3 text-sm text-muted-foreground">
-                        <p className="text-base font-semibold text-foreground">Connect with us</p>
-                        <div className="flex flex-wrap gap-3">
-                          <a
-                            href="https://instagram.com/studyflow"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 text-foreground transition hover:border-primary hover:text-primary"
-                          >
-                            <Instagram className="h-4 w-4" /> Instagram
-                          </a>
-                          <a
-                            href="https://linkedin.com/company/studyflow"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 text-foreground transition hover:border-primary hover:text-primary"
-                          >
-                            <Linkedin className="h-4 w-4" /> LinkedIn
-                          </a>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="flex items-center gap-2">
-                            <Mail className="h-4 w-4" /> hello@studyflow.app
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <Send className="h-4 w-4" /> Study Flow Team
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-6 border-t border-border/60 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-                      <span>
-                        © {new Date().getFullYear()} Study Flow · Built for focused learners.
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          localStorage.removeItem("studyflow:visited");
-                          setShowLanding(true);
-                        }}
-                        className="hover:text-primary transition font-semibold underline cursor-pointer"
-                      >
-                        View Welcome Page & Tour
-                      </button>
-                    </div>
-                  </footer>
+                  <AppFooter
+                    scrollToHome={scrollToHome}
+                    onViewTour={() => {
+                      localStorage.removeItem("studyflow:visited");
+                      setShowLanding(true);
+                    }}
+                  />
                 </motion.div>
               </TabsContent>
 
@@ -1007,9 +552,6 @@ function Index() {
                     onUpdateBudget={updateBudget}
                     onAddStudyLog={addStudyLog}
                     onDeleteStudyLog={deleteStudyLog}
-                    materials={materials}
-                    onAddMaterial={addMaterial}
-                    onDeleteMaterial={deleteMaterial}
                   />
                 </motion.div>
               </TabsContent>
