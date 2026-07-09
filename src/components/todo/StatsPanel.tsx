@@ -75,7 +75,11 @@ export function StatsPanel({ tasks }: Props) {
                 <Cell key={i} fill={d.fill} />
               ))}
             </Pie>
-            <Tooltip contentStyle={tooltipStyle} />
+            <Tooltip 
+              contentStyle={tooltipStyle} 
+              itemStyle={{ color: "#f8fafc" }}
+              labelStyle={{ color: "#f8fafc" }}
+            />
           </PieChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -86,7 +90,12 @@ export function StatsPanel({ tasks }: Props) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
             <XAxis dataKey="name" fontSize={12} stroke="rgba(148, 163, 184, 0.5)" />
             <YAxis fontSize={12} allowDecimals={false} stroke="rgba(148, 163, 184, 0.5)" />
-            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "transparent" }} />
+            <Tooltip 
+              contentStyle={tooltipStyle} 
+              cursor={{ fill: "transparent" }}
+              itemStyle={{ color: "#f8fafc" }}
+              labelStyle={{ color: "#f8fafc" }}
+            />
             <Bar dataKey="value" radius={[8, 8, 0, 0]}>
               {priorityData.map((d, i) => (
                 <Cell key={i} fill={d.fill} />
@@ -102,7 +111,12 @@ export function StatsPanel({ tasks }: Props) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
             <XAxis dataKey="subject" fontSize={11} stroke="rgba(148, 163, 184, 0.5)" />
             <YAxis fontSize={12} allowDecimals={false} stroke="rgba(148, 163, 184, 0.5)" />
-            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "transparent" }} />
+            <Tooltip 
+              contentStyle={tooltipStyle} 
+              cursor={{ fill: "transparent" }}
+              itemStyle={{ color: "#f8fafc" }}
+              labelStyle={{ color: "#f8fafc" }}
+            />
             <Bar dataKey="count" fill="var(--primary)" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -114,7 +128,12 @@ export function StatsPanel({ tasks }: Props) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
             <XAxis dataKey="day" fontSize={12} stroke="rgba(148, 163, 184, 0.5)" />
             <YAxis fontSize={12} allowDecimals={false} stroke="rgba(148, 163, 184, 0.5)" />
-            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "transparent" }} />
+            <Tooltip 
+              contentStyle={tooltipStyle} 
+              cursor={{ fill: "transparent" }}
+              itemStyle={{ color: "#f8fafc" }}
+              labelStyle={{ color: "#f8fafc" }}
+            />
             <Bar dataKey="completed" fill="var(--primary-glow)" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -124,12 +143,13 @@ export function StatsPanel({ tasks }: Props) {
 }
 
 const tooltipStyle: React.CSSProperties = {
-  background: "rgba(15, 23, 42, 0.9)",
-  border: "1px solid rgba(148, 163, 184, 0.2)",
+  background: "rgba(15, 23, 42, 0.95)",
+  border: "1px solid rgba(148, 163, 184, 0.25)",
   borderRadius: "0.75rem",
   fontSize: 12,
   padding: "8px 12px",
-  color: "#e2e8f0",
+  color: "#f8fafc",
+  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)",
 };
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {

@@ -13,7 +13,7 @@ interface Props {
   onCardSelect?: (filter: FilterKey) => void;
 }
 
-export function Dashboard({ tasks, streak, completedToday, dailyGoal }: Props) {
+export function Dashboard({ tasks, streak, completedToday, dailyGoal, onCardSelect }: Props) {
   const total = tasks.length;
   const completed = tasks.filter((t) => t.completed).length;
   const pending = tasks.filter((t) => !t.completed).length;

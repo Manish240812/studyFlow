@@ -33,7 +33,7 @@ import { UpcomingPanel } from "@/components/todo/UpcomingPanel";
 import { SettingsPanel } from "@/components/todo/SettingsPanel";
 import { useSettings, useStreak, useTasks, useTheme } from "@/lib/todo/storage";
 import { isDueThisWeek, isDueToday, isOverdue, type Task } from "@/lib/todo/types";
-import { quoteOfTheDay } from "@/lib/todo/quotes";
+import { QUOTES } from "@/lib/todo/quotes";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -49,12 +49,31 @@ function Index() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [sort, setSort] = useState<SortKey>("due");
   const [editing, setEditing] = useState<Task | null>(null);
+  const [activeTab, setActiveTab] = useState<"tasks" | "stats">("tasks");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewFilter, setPreviewFilter] = useState<FilterKey>("all");
-  const quote = useMemo(() => quoteOfTheDay(), []);
+  const [quoteIndex, setQuoteIndex] = useState(
+    () => Math.floor(Date.now() / 15000) % QUOTES.length,
+  );
   const prevAllComplete = useRef(false);
+
+  const scrollToHome = () => {
+    const hero = document.getElementById("hero-section");
+    if (hero) {
+      hero.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % QUOTES.length);
+    }, 15000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   // Confetti when all tasks complete
   useEffect(() => {
@@ -179,13 +198,21 @@ function Index() {
       {/* Header */}
       <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background/70 px-4 py-3 shadow-sm backdrop-blur sm:px-5">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="rounded-2xl p-1">
-            <img
-              src="/logo.png.png"
-              alt="Study Flow logo"
-              className="h-14 w-auto max-w-[240px] object-contain drop-shadow-[0_0_10px_rgba(59,130,246,0.25)]"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={scrollToHome}
+            className="min-w-0 text-left transition hover:opacity-90"
+            aria-label="Go to home"
+          >
+            <div className="flex items-center gap-1 text-2xl tracking-tight">
+              <span className={`font-semibold ${theme === "dark" ? "text-slate-100" : "text-slate-950"}`}>
+                Study
+              </span>
+              <span className={`font-bold ${theme === "dark" ? "text-sky-300" : "text-sky-600"}`}>
+                Flow
+              </span>
+            </div>
+          </button>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -378,12 +405,15 @@ function Index() {
 
       {/* Quote */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        key={quoteIndex}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.25 }}
         className="mt-5 flex items-start gap-2 rounded-2xl border border-border bg-secondary/40 p-3 text-sm italic text-muted-foreground"
       >
         <QuoteIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-        <span>{quote}</span>
+        <span>{QUOTES[quoteIndex]}</span>
       </motion.div>
 
       <div className="mt-6">
@@ -450,8 +480,22 @@ function Index() {
 
             <footer className="mt-12 rounded-3xl border border-border/60 bg-card/70 p-6 shadow-sm backdrop-blur">
               <div className="grid gap-6 md:grid-cols-[1.2fr_0.8fr]">
-                <div className="space-y-3 text-sm text-muted-foreground">
-                  <p className="text-base font-semibold text-foreground">About us</p>
+                <div className="space-y-4 text-sm text-muted-foreground">
+                  <button
+                    type="button"
+                    onClick={scrollToHome}
+                    className="text-left transition hover:opacity-90"
+                    aria-label="Go to home"
+                  >
+                    <div className="flex items-center gap-1 text-2xl tracking-tight">
+                      <span className={`font-semibold ${theme === "dark" ? "text-slate-100" : "text-slate-950"}`}>
+                        Study
+                      </span>
+                      <span className={`font-bold ${theme === "dark" ? "text-sky-300" : "text-sky-600"}`}>
+                        Flow
+                      </span>
+                    </div>
+                  </button>
                   <p>
                     Study Flow is built for students who want a calm, focused way to manage tasks,
                     deadlines, and study routines without feeling overwhelmed.
