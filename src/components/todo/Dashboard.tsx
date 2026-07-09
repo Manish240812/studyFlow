@@ -22,10 +22,38 @@ export function Dashboard({ tasks, streak, completedToday, dailyGoal, onCardSele
   const goalPct = Math.min(100, Math.round((completedToday / Math.max(1, dailyGoal)) * 100));
 
   const cards = [
-    { label: "Total", value: total, icon: ListTodo, color: "text-primary", bg: "bg-primary/10", filter: "all" as const },
-    { label: "Completed", value: completed, icon: CheckCircle2, color: "text-success", bg: "bg-success/10", filter: "completed" as const },
-    { label: "Pending", value: pending, icon: Circle, color: "text-warning", bg: "bg-warning/15", filter: "pending" as const },
-    { label: "Overdue", value: overdue, icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10", filter: "overdue" as const },
+    {
+      label: "Total",
+      value: total,
+      icon: ListTodo,
+      color: "text-primary",
+      bg: "bg-primary/10",
+      filter: "all" as const,
+    },
+    {
+      label: "Completed",
+      value: completed,
+      icon: CheckCircle2,
+      color: "text-success",
+      bg: "bg-success/10",
+      filter: "completed" as const,
+    },
+    {
+      label: "Pending",
+      value: pending,
+      icon: Circle,
+      color: "text-warning",
+      bg: "bg-warning/15",
+      filter: "pending" as const,
+    },
+    {
+      label: "Overdue",
+      value: overdue,
+      icon: AlertTriangle,
+      color: "text-destructive",
+      bg: "bg-destructive/10",
+      filter: "overdue" as const,
+    },
   ];
 
   return (
@@ -47,9 +75,7 @@ export function Dashboard({ tasks, streak, completedToday, dailyGoal, onCardSele
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   {c.label}
                 </p>
-                <p className="mt-1 text-3xl font-bold tracking-tight text-foreground">
-                  {c.value}
-                </p>
+                <p className="mt-1 text-3xl font-bold tracking-tight text-foreground">{c.value}</p>
               </div>
               <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${c.bg}`}>
                 <c.icon className={`h-5 w-5 ${c.color}`} />

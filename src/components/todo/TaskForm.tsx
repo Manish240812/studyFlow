@@ -29,6 +29,8 @@ interface Props {
   editing?: Task | null;
   onUpdate?: (id: string, patch: Partial<Task>) => void;
   onCancelEdit?: () => void;
+  defaultDueDate?: string;
+  hideScheduleFields?: boolean;
 }
 
 const emptyForm = {
@@ -42,8 +44,18 @@ const emptyForm = {
   duration: "",
 };
 
-export function TaskForm({ onAdd, editing, onUpdate, onCancelEdit }: Props) {
-  const [form, setForm] = useState(emptyForm);
+export function TaskForm({
+  onAdd,
+  editing,
+  onUpdate,
+  onCancelEdit,
+  defaultDueDate,
+  hideScheduleFields = false,
+}: Props) {
+  const [form, setForm] = useState(() => ({
+    ...emptyForm,
+    dueDate: defaultDueDate || "",
+  }));
 
   useEffect(() => {
     if (editing) {
@@ -57,8 +69,13 @@ export function TaskForm({ onAdd, editing, onUpdate, onCancelEdit }: Props) {
         dueTime: editing.dueTime || "",
         duration: editing.duration ? String(editing.duration) : "",
       });
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        dueDate: defaultDueDate || "",
+      }));
     }
-  }, [editing]);
+  }, [editing, defaultDueDate]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +91,7 @@ export function TaskForm({ onAdd, editing, onUpdate, onCancelEdit }: Props) {
         category: form.category,
         priority: form.priority,
         dueDate: form.dueDate || undefined,
-        dueTime: form.dueTime || undefined,
+        dueTime: hideScheduleFields ? undefined : form.dueTime || undefined,
         duration: form.duration ? Number(form.duration) : undefined,
       });
       toast.success("Task updated");
@@ -88,7 +105,7 @@ export function TaskForm({ onAdd, editing, onUpdate, onCancelEdit }: Props) {
         category: form.category,
         priority: form.priority,
         dueDate: form.dueDate || undefined,
-        dueTime: form.dueTime || undefined,
+        dueTime: hideScheduleFields ? undefined : form.dueTime || undefined,
         duration: form.duration ? Number(form.duration) : undefined,
         completed: false,
         pinned: false,
@@ -99,7 +116,7 @@ export function TaskForm({ onAdd, editing, onUpdate, onCancelEdit }: Props) {
       onAdd(task);
       toast.success("Task added");
     }
-    setForm(emptyForm);
+    setForm({ ...emptyForm, dueDate: defaultDueDate || "" });
   };
 
   return (
@@ -148,10 +165,14 @@ export function TaskForm({ onAdd, editing, onUpdate, onCancelEdit }: Props) {
             value={form.subject}
             onValueChange={(v) => setForm({ ...form, subject: v as Subject })}
           >
-            <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="mt-1.5">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {SUBJECTS.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -163,10 +184,14 @@ export function TaskForm({ onAdd, editing, onUpdate, onCancelEdit }: Props) {
             value={form.category}
             onValueChange={(v) => setForm({ ...form, category: v as Category })}
           >
-            <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="mt-1.5">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {CATEGORIES.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -178,7 +203,9 @@ export function TaskForm({ onAdd, editing, onUpdate, onCancelEdit }: Props) {
             value={form.priority}
             onValueChange={(v) => setForm({ ...form, priority: v as Priority })}
           >
-            <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="mt-1.5">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {PRIORITIES.map((p) => (
                 <SelectItem key={p} value={p}>
@@ -205,27 +232,31 @@ export function TaskForm({ onAdd, editing, onUpdate, onCancelEdit }: Props) {
           />
         </div>
 
-        <div>
-          <Label htmlFor="date">Due date</Label>
-          <Input
-            id="date"
-            type="date"
-            value={form.dueDate}
-            onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-            className="mt-1.5"
-          />
-        </div>
+        {!hideScheduleFields && (
+          <>
+            <div>
+              <Label htmlFor="date">Due date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={form.dueDate}
+                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                className="mt-1.5"
+              />
+            </div>
 
-        <div>
-          <Label htmlFor="time">Due time</Label>
-          <Input
-            id="time"
-            type="time"
-            value={form.dueTime}
-            onChange={(e) => setForm({ ...form, dueTime: e.target.value })}
-            className="mt-1.5"
-          />
-        </div>
+            <div>
+              <Label htmlFor="time">Due time</Label>
+              <Input
+                id="time"
+                type="time"
+                value={form.dueTime}
+                onChange={(e) => setForm({ ...form, dueTime: e.target.value })}
+                className="mt-1.5"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="mt-5 flex flex-wrap justify-end gap-2">

@@ -46,8 +46,9 @@ export function TaskList({
     const reordered = arrayMove(tasks, oldIndex, newIndex);
     // Reassign order numbers preserving other tasks
     const orderMap = new Map(reordered.map((t, i) => [t.id, i]));
-    const next = allTasks
-      .map((t) => (orderMap.has(t.id) ? { ...t, order: orderMap.get(t.id)! } : t));
+    const next = allTasks.map((t) =>
+      orderMap.has(t.id) ? { ...t, order: orderMap.get(t.id)! } : t,
+    );
     setAllTasks(next);
   };
 
@@ -62,9 +63,7 @@ export function TaskList({
           <Inbox className="h-9 w-9" />
         </div>
         <h3 className="mt-5 font-display text-xl font-bold">You're all caught up!</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Add your first task to start studying.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Add your first task to start studying.</p>
       </motion.div>
     );
   }

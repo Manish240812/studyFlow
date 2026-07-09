@@ -17,9 +17,7 @@ interface Props {
   tasks: Task[];
 }
 
-const CHART_COLORS = [
-  "hsl(var(--chart-1, 220 90% 60%))",
-];
+const CHART_COLORS = ["hsl(var(--chart-1, 220 90% 60%))"];
 
 export function StatsPanel({ tasks }: Props) {
   const completed = tasks.filter((t) => t.completed).length;
@@ -40,9 +38,21 @@ export function StatsPanel({ tasks }: Props) {
   );
 
   const priorityData = [
-    { name: "High", value: tasks.filter((t) => t.priority === "high").length, fill: "var(--destructive)" },
-    { name: "Medium", value: tasks.filter((t) => t.priority === "medium").length, fill: "var(--warning)" },
-    { name: "Low", value: tasks.filter((t) => t.priority === "low").length, fill: "var(--success)" },
+    {
+      name: "High",
+      value: tasks.filter((t) => t.priority === "high").length,
+      fill: "var(--destructive)",
+    },
+    {
+      name: "Medium",
+      value: tasks.filter((t) => t.priority === "medium").length,
+      fill: "var(--warning)",
+    },
+    {
+      name: "Low",
+      value: tasks.filter((t) => t.priority === "low").length,
+      fill: "var(--success)",
+    },
   ];
 
   const weekData = useMemo(() => {
@@ -75,8 +85,8 @@ export function StatsPanel({ tasks }: Props) {
                 <Cell key={i} fill={d.fill} />
               ))}
             </Pie>
-            <Tooltip 
-              contentStyle={tooltipStyle} 
+            <Tooltip
+              contentStyle={tooltipStyle}
               itemStyle={{ color: "#f8fafc" }}
               labelStyle={{ color: "#f8fafc" }}
             />
@@ -87,11 +97,15 @@ export function StatsPanel({ tasks }: Props) {
       <ChartCard title="Tasks by priority">
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={priorityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(148, 163, 184, 0.15)"
+              vertical={false}
+            />
             <XAxis dataKey="name" fontSize={12} stroke="rgba(148, 163, 184, 0.5)" />
             <YAxis fontSize={12} allowDecimals={false} stroke="rgba(148, 163, 184, 0.5)" />
-            <Tooltip 
-              contentStyle={tooltipStyle} 
+            <Tooltip
+              contentStyle={tooltipStyle}
               cursor={{ fill: "transparent" }}
               itemStyle={{ color: "#f8fafc" }}
               labelStyle={{ color: "#f8fafc" }}
@@ -108,11 +122,15 @@ export function StatsPanel({ tasks }: Props) {
       <ChartCard title="Tasks by subject">
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={subjectData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(148, 163, 184, 0.15)"
+              vertical={false}
+            />
             <XAxis dataKey="subject" fontSize={11} stroke="rgba(148, 163, 184, 0.5)" />
             <YAxis fontSize={12} allowDecimals={false} stroke="rgba(148, 163, 184, 0.5)" />
-            <Tooltip 
-              contentStyle={tooltipStyle} 
+            <Tooltip
+              contentStyle={tooltipStyle}
               cursor={{ fill: "transparent" }}
               itemStyle={{ color: "#f8fafc" }}
               labelStyle={{ color: "#f8fafc" }}
@@ -125,11 +143,15 @@ export function StatsPanel({ tasks }: Props) {
       <ChartCard title="Productivity — last 7 days">
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={weekData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(148, 163, 184, 0.15)"
+              vertical={false}
+            />
             <XAxis dataKey="day" fontSize={12} stroke="rgba(148, 163, 184, 0.5)" />
             <YAxis fontSize={12} allowDecimals={false} stroke="rgba(148, 163, 184, 0.5)" />
-            <Tooltip 
-              contentStyle={tooltipStyle} 
+            <Tooltip
+              contentStyle={tooltipStyle}
               cursor={{ fill: "transparent" }}
               itemStyle={{ color: "#f8fafc" }}
               labelStyle={{ color: "#f8fafc" }}

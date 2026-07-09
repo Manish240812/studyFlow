@@ -1,32 +1,12 @@
 import { motion } from "framer-motion";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  Calendar,
-  Clock,
-  Copy,
-  Edit3,
-  GripVertical,
-  Pin,
-  Star,
-  Timer,
-  Trash2,
-} from "lucide-react";
+import { Calendar, Clock, Copy, Edit3, GripVertical, Pin, Star, Timer, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import {
-  PRIORITY_META,
-  SUBJECT_COLORS,
-  isOverdue,
-  type Task,
-} from "@/lib/todo/types";
+import { PRIORITY_META, SUBJECT_COLORS, isOverdue, type Task } from "@/lib/todo/types";
 
 interface Props {
   task: Task;
@@ -47,8 +27,9 @@ export function TaskCard({
   onPin,
   onFavorite,
 }: Props) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: task.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: task.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -142,22 +123,39 @@ export function TaskCard({
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
-            <span className={cn("rounded-full border px-2 py-0.5 font-medium", SUBJECT_COLORS[task.subject])}>
+            <span
+              className={cn(
+                "rounded-full border px-2 py-0.5 font-medium",
+                SUBJECT_COLORS[task.subject],
+              )}
+            >
               {task.subject}
             </span>
             <span className="rounded-full border border-border bg-secondary/60 px-2 py-0.5 font-medium text-secondary-foreground">
               {task.category}
             </span>
-            <span className={cn("rounded-full border px-2 py-0.5 font-medium flex items-center gap-1", p.className)}>
+            <span
+              className={cn(
+                "rounded-full border px-2 py-0.5 font-medium flex items-center gap-1",
+                p.className,
+              )}
+            >
               <span className={cn("h-1.5 w-1.5 rounded-full", p.dot)} /> {p.label}
             </span>
             {task.dueDate && (
-              <span className={cn(
-                "flex items-center gap-1 rounded-full border border-border bg-background/60 px-2 py-0.5",
-                overdue && !task.completed && "text-destructive border-destructive/40 bg-destructive/5",
-              )}>
+              <span
+                className={cn(
+                  "flex items-center gap-1 rounded-full border border-border bg-background/60 px-2 py-0.5",
+                  overdue &&
+                    !task.completed &&
+                    "text-destructive border-destructive/40 bg-destructive/5",
+                )}
+              >
                 <Calendar className="h-3 w-3" />
-                {new Date(task.dueDate).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                {new Date(task.dueDate).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                })}
               </span>
             )}
             {task.dueTime && (
@@ -173,7 +171,11 @@ export function TaskCard({
               </span>
             )}
             <span className="ml-auto text-muted-foreground">
-              Added {new Date(task.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+              Added{" "}
+              {new Date(task.createdAt).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
             </span>
           </div>
         </div>

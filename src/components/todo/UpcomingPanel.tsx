@@ -36,9 +36,7 @@ export function UpcomingPanel({ tasks }: Props) {
   );
 
   const next = upcoming[0];
-  const nextTarget = next?.dueDate
-    ? `${next.dueDate}T${next.dueTime || "23:59"}`
-    : undefined;
+  const nextTarget = next?.dueDate ? `${next.dueDate}T${next.dueTime || "23:59"}` : undefined;
   const countdown = useCountdown(nextTarget);
 
   return (
@@ -57,7 +55,11 @@ export function UpcomingPanel({ tasks }: Props) {
               {today.toLocaleDateString("en-US", { weekday: "long" })}
             </h4>
             <p className="text-xs text-muted-foreground">
-              {today.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+              {today.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
             </p>
           </div>
         </div>
@@ -91,7 +93,10 @@ export function UpcomingPanel({ tasks }: Props) {
               >
                 <span className="min-w-0 truncate font-medium">{t.title}</span>
                 <span className="ml-3 shrink-0 text-xs opacity-80">
-                  {new Date(t.dueDate!).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {new Date(t.dueDate!).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
                   {t.dueTime ? ` · ${t.dueTime}` : ""}
                 </span>
               </li>

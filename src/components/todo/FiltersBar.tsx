@@ -66,7 +66,9 @@ export function FiltersBar({ search, onSearch, filter, onFilter, sort, onSort, c
         <div className="flex shrink-0 items-center gap-2">
           <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
           <Select value={sort} onValueChange={(v) => onSort(v as SortKey)}>
-            <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="due">Due date</SelectItem>
               <SelectItem value="priority">Priority</SelectItem>

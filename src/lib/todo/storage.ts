@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Task } from "./types";
+import type { Task, UserProfile, StudyLog, Subject, SubjectMaterial } from "./types";
 
 const STORAGE_KEY = "student-todo:tasks:v1";
 const NOTES_KEY = "student-todo:notes:v1";
 const STREAK_KEY = "student-todo:streak:v1";
 const SETTINGS_KEY = "student-todo:settings:v1";
+const PROFILE_KEY = "student-todo:profile:v1";
+const STUDY_LOGS_KEY = "student-todo:studylogs:v1";
+const BUDGETS_KEY = "student-todo:budgets:v1";
+const MATERIALS_KEY = "student-todo:materials:v1";
 
 export interface Settings {
   animations: boolean;
@@ -12,6 +16,25 @@ export interface Settings {
 }
 
 const DEFAULT_SETTINGS: Settings = { animations: true, dailyGoal: 5 };
+
+const DEFAULT_PROFILE: UserProfile = {
+  name: "Aarav Sharma",
+  email: "aarav@example.com",
+  phone: "+91 98765 43210",
+  branch: "Computer Science",
+  className: "2nd Year",
+};
+
+const DEFAULT_BUDGETS: Record<Subject, number> = {
+  Mathematics: 5,
+  Physics: 5,
+  Chemistry: 5,
+  "Computer Science": 5,
+  DSA: 5,
+  English: 3,
+  Electronics: 4,
+  Other: 2,
+};
 
 function safeParse<T>(raw: string | null, fallback: T): T {
   if (!raw) return fallback;
@@ -75,9 +98,8 @@ export function useStreak(tasks: Task[]) {
 
   const completedToday = useMemo(
     () =>
-      tasks.filter(
-        (t) => t.completed && t.completedAt && t.completedAt.slice(0, 10) === todayStr(),
-      ).length,
+      tasks.filter((t) => t.completed && t.completedAt && t.completedAt.slice(0, 10) === todayStr())
+        .length,
     [tasks],
   );
 
@@ -131,17 +153,110 @@ export function useTasks() {
   return { tasks, hydrated, addTask, updateTask, deleteTask, setAllTasks };
 }
 
+export type ThemeMode = "light" | "dark" | "cyberpunk" | "emerald" | "sunset" | "ocean";
+
 export function useTheme() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<ThemeMode>("dark");
+
   useEffect(() => {
-    const stored = localStorage.getItem("student-todo:theme") as "light" | "dark" | null;
+    const stored = localStorage.getItem("student-todo:theme") as ThemeMode | null;
     const initial =
       stored ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
     setTheme(initial);
   }, []);
+
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
+    const classList = document.documentElement.classList;
+    classList.remove("light", "dark", "cyberpunk", "emerald", "sunset", "ocean");
+    classList.add(theme);
+
+    // Toggle dark class for compatibility with general dark styles
+    classList.toggle("dark", theme !== "light");
+
     localStorage.setItem("student-todo:theme", theme);
   }, [theme]);
-  return { theme, toggle: () => setTheme((t) => (t === "dark" ? "light" : "dark")) };
+
+  return {
+    theme,
+    setTheme,
+    toggle: () => setTheme((t) => (t === "light" ? "dark" : "light")),
+  };
+}
+
+export function useProfile() {
+  return useLocalStorageState<UserProfile>(PROFILE_KEY, DEFAULT_PROFILE);
+}
+
+export function useBudgets() {
+  const [budgets, setBudgets, hydrated] = useLocalStorageState<Record<Subject, number>>(
+    BUDGETS_KEY,
+    DEFAULT_BUDGETS,
+  );
+
+  const updateBudget = useCallback(
+    (subject: Subject, hours: number) => {
+      setBudgets((prev) => ({
+        ...prev,
+        [subject]: hours,
+      }));
+    },
+    [setBudgets],
+  );
+
+  return [budgets, updateBudget, hydrated] as const;
+}
+
+export function useStudyLogs() {
+  const [studyLogs, setStudyLogs, hydrated] = useLocalStorageState<StudyLog[]>(STUDY_LOGS_KEY, []);
+
+  const addStudyLog = useCallback(
+    (log: StudyLog) => {
+      setStudyLogs((prev) => [log, ...prev]);
+    },
+    [setStudyLogs],
+  );
+
+  const deleteStudyLog = useCallback(
+    (id: string) => {
+      setStudyLogs((prev) => prev.filter((log) => log.id !== id));
+    },
+    [setStudyLogs],
+  );
+
+  const setAllStudyLogs = useCallback(
+    (next: StudyLog[]) => {
+      setStudyLogs(next);
+    },
+    [setStudyLogs],
+  );
+
+  return { studyLogs, hydrated, addStudyLog, deleteStudyLog, setAllStudyLogs };
+}
+
+export function useSubjectMaterials() {
+  const [materials, setMaterials, hydrated] = useLocalStorageState<SubjectMaterial[]>(
+    MATERIALS_KEY,
+    [],
+  );
+
+  const addMaterial = useCallback(
+    (material: Omit<SubjectMaterial, "id" | "createdAt">) => {
+      const newMaterial: SubjectMaterial = {
+        ...material,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+      };
+      setMaterials((prev) => [newMaterial, ...prev]);
+    },
+    [setMaterials],
+  );
+
+  const deleteMaterial = useCallback(
+    (id: string) => {
+      setMaterials((prev) => prev.filter((m) => m.id !== id));
+    },
+    [setMaterials],
+  );
+
+  return { materials, hydrated, addMaterial, deleteMaterial };
 }

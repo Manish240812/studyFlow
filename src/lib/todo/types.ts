@@ -11,13 +11,7 @@ export type Subject =
   | "Other";
 
 export type Category =
-  | "Assignment"
-  | "Homework"
-  | "Exam"
-  | "Lab"
-  | "Project"
-  | "Revision"
-  | "Personal";
+  "Assignment" | "Homework" | "Exam" | "Lab" | "Project" | "Revision" | "Personal";
 
 export interface Task {
   id: string;
@@ -35,6 +29,7 @@ export interface Task {
   favorite: boolean;
   createdAt: string;
   order: number;
+  plannedInWeekly?: boolean;
 }
 
 export const SUBJECTS: Subject[] = [
@@ -60,10 +55,7 @@ export const CATEGORIES: Category[] = [
 
 export const PRIORITIES: Priority[] = ["high", "medium", "low"];
 
-export const PRIORITY_META: Record<
-  Priority,
-  { label: string; className: string; dot: string }
-> = {
+export const PRIORITY_META: Record<Priority, { label: string; className: string; dot: string }> = {
   high: {
     label: "High",
     className: "bg-destructive/10 text-destructive border-destructive/20",
@@ -115,4 +107,31 @@ export function isDueThisWeek(t: Task): boolean {
   const d = new Date(t.dueDate);
   const diff = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
   return diff >= -1 && diff <= 7;
+}
+
+export interface UserProfile {
+  name: string;
+  email: string;
+  phone: string;
+  branch: string;
+  className: string;
+}
+
+export interface StudyLog {
+  id: string;
+  subject: Subject;
+  duration: number; // minutes
+  date: string; // YYYY-MM-DD
+  notes?: string;
+  taskId?: string; // link to task if auto-logged
+  createdAt: string;
+}
+
+export interface SubjectMaterial {
+  id: string;
+  subject: Subject;
+  title: string;
+  type: "link" | "note";
+  value: string; // URL for links, text block content for cheat sheets
+  createdAt: string;
 }

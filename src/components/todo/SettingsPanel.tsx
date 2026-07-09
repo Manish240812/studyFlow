@@ -9,17 +9,9 @@ import type { Settings } from "@/lib/todo/storage";
 interface Props {
   settings: Settings;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
-  theme: "light" | "dark";
-  toggleTheme: () => void;
 }
 
-export function SettingsPanel({
-  settings,
-  setSettings,
-  theme,
-  toggleTheme,
-}: Props) {
-
+export function SettingsPanel({ settings, setSettings }: Props) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -34,9 +26,6 @@ export function SettingsPanel({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Row label="Dark mode" hint="Toggle theme">
-          <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
-        </Row>
         <Row label="Animations" hint="Enable motion effects">
           <Switch
             checked={settings.animations}
@@ -55,7 +44,6 @@ export function SettingsPanel({
           />
         </Row>
       </div>
-
     </motion.div>
   );
 }
