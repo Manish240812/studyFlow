@@ -131,7 +131,7 @@ export interface SubjectMaterial {
   id: string;
   subject: Subject;
   title: string;
-  type: "link" | "note";
+  type: "link" | "note" | "image";
   value: string; // URL for links, text block content for cheat sheets
   createdAt: string;
 }

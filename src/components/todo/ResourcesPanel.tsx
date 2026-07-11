@@ -9,6 +9,7 @@ import {
   BookOpen,
   FolderOpen,
   HelpCircle,
+  Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -41,9 +42,10 @@ interface Props {
 export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: Props) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [targetSubject, setTargetSubject] = useState<Subject>("Computer Science");
+  const [selectedMaterial, setSelectedMaterial] = useState<SubjectMaterial | null>(null);
   const [form, setForm] = useState({
     title: "",
-    type: "link" as "link" | "note",
+    type: "link" as "link" | "note" | "image",
     value: "",
   });
 
@@ -57,6 +59,50 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
     setIsAddOpen(true);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 1024;
+        const MAX_HEIGHT = 1024;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Compress image to 70% quality JPEG
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+        setForm((prev) => ({ ...prev, value: dataUrl }));
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) {
@@ -64,7 +110,11 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
       return;
     }
     if (!form.value.trim()) {
-      toast.error("Please enter a link or note content");
+      if (form.type === "image") {
+        toast.error("Please upload an image file");
+      } else {
+        toast.error("Please enter a link or note content");
+      }
       return;
     }
 
@@ -175,35 +225,37 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
                       subjectMaterials.map((m) => (
                         <div
                           key={m.id}
-                          className="group flex items-start justify-between gap-2 rounded-xl bg-secondary/20 border border-border/30 p-2 hover:bg-secondary/40 transition"
+                          onClick={() => setSelectedMaterial(m)}
+                          className="group flex items-start justify-between gap-2 rounded-xl bg-secondary/20 border border-border/30 p-2 hover:bg-secondary/40 transition cursor-pointer"
                         >
-                          <div className="flex items-start gap-2 min-w-0">
-                            <div className="mt-0.5 p-1 rounded bg-secondary/80 text-foreground">
+                          <div className="flex items-start gap-2 min-w-0 flex-1">
+                            <div className="mt-0.5 p-1 rounded bg-secondary/80 text-foreground shrink-0">
                               {m.type === "link" ? (
-                                <Link2 className="h-3 w-3 text-primary" />
+                                <Link2 className="h-3.5 w-3.5 text-primary" />
+                              ) : m.type === "image" ? (
+                                <ImageIcon className="h-3.5 w-3.5 text-emerald-500" />
                               ) : (
-                                <FileText className="h-3 w-3 text-amber-500" />
+                                <FileText className="h-3.5 w-3.5 text-amber-500" />
                               )}
                             </div>
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <p
-                                className="text-xs font-semibold text-foreground truncate max-w-[150px]"
+                                className="text-xs font-semibold text-foreground truncate max-w-[150px] group-hover:text-primary transition-colors"
                                 title={m.title}
                               >
                                 {m.title}
                               </p>
                               {m.type === "link" ? (
-                                <a
-                                  href={m.value}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-[10px] text-primary hover:underline inline-flex items-center gap-0.5 truncate max-w-[140px] mt-0.5"
-                                >
+                                <span className="text-[10px] text-primary hover:underline inline-flex items-center gap-0.5 truncate max-w-[140px] mt-0.5 font-medium">
                                   Open URL
                                   <ExternalLink className="h-2 w-2" />
-                                </a>
+                                </span>
+                              ) : m.type === "image" ? (
+                                <span className="text-[10px] text-emerald-500 hover:underline inline-flex items-center gap-0.5 truncate max-w-[140px] mt-0.5 font-medium">
+                                  View Photo
+                                </span>
                               ) : (
-                                <p className="text-[10px] text-muted-foreground whitespace-pre-wrap truncate max-w-[160px] leading-snug mt-0.5">
+                                <p className="text-[10px] text-muted-foreground line-clamp-1 max-w-[160px] leading-snug mt-0.5">
                                   {m.value}
                                 </p>
                               )}
@@ -213,7 +265,8 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
                           <Button
                             size="icon"
                             variant="ghost"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               onDeleteMaterial(m.id);
                               toast.success("Resource removed");
                             }}
@@ -249,7 +302,7 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
           <DialogHeader>
             <DialogTitle>Add Study Resource</DialogTitle>
             <DialogDescription>
-              Fill in the details below to add a link or cheat-sheet note.
+              Fill in the details below to add a link, cheat-sheet note, or photo.
             </DialogDescription>
           </DialogHeader>
 
@@ -274,7 +327,7 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
                 <Select
                   value={form.type}
                   onValueChange={(val) =>
-                    setForm({ ...form, type: val as "link" | "note", value: "" })
+                    setForm({ ...form, type: val as "link" | "note" | "image", value: "" })
                   }
                 >
                   <SelectTrigger className="h-9">
@@ -287,6 +340,9 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
                     <SelectItem value="note" className="cursor-pointer">
                       📝 Cheat-Sheet Note
                     </SelectItem>
+                    <SelectItem value="image" className="cursor-pointer">
+                      📷 Media / Photo
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -294,7 +350,11 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
 
             <div className="space-y-1">
               <Label htmlFor="val" className="text-xs font-semibold">
-                {form.type === "link" ? "Link / URL" : "Cheat-Sheet notes"}
+                {form.type === "link"
+                  ? "Link / URL"
+                  : form.type === "note"
+                    ? "Cheat-Sheet notes"
+                    : "Upload Media / Photo"}
               </Label>
               {form.type === "link" ? (
                 <Input
@@ -305,7 +365,7 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
                   required
                   className="h-9"
                 />
-              ) : (
+              ) : form.type === "note" ? (
                 <Textarea
                   id="val"
                   placeholder="Enter exam schedule, pointers, equations, or cheat sheet notes..."
@@ -314,6 +374,26 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
                   required
                   className="min-h-[80px] max-h-[160px]"
                 />
+              ) : (
+                <div className="space-y-2">
+                  <Input
+                    id="val"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    required={!form.value}
+                    className="h-9 cursor-pointer text-xs pt-1.5"
+                  />
+                  {form.value && (
+                    <div className="relative mt-2 rounded-xl border border-border/50 p-1.5 bg-secondary/15 flex items-center justify-center max-h-[120px] overflow-hidden">
+                      <img
+                        src={form.value}
+                        alt="Preview"
+                        className="max-h-[100px] object-contain rounded-lg"
+                      />
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
@@ -355,6 +435,97 @@ export function ResourcesPanel({ materials, onAddMaterial, onDeleteMaterial }: P
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog open={!!selectedMaterial} onOpenChange={(open) => !open && setSelectedMaterial(null)}>
+        <DialogContent className="sm:max-w-[550px] rounded-2xl glass max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-block rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
+                  selectedMaterial ? SUBJECT_COLORS[selectedMaterial.subject] : ""
+                }`}
+              >
+                {selectedMaterial?.subject}
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                {selectedMaterial ? new Date(selectedMaterial.createdAt).toLocaleDateString() : ""}
+              </span>
+            </div>
+            <DialogTitle className="text-xl font-bold font-display mt-2 flex items-center gap-2">
+              {selectedMaterial?.type === "link" && <Link2 className="h-5 w-5 text-primary" />}
+              {selectedMaterial?.type === "note" && <FileText className="h-5 w-5 text-amber-500" />}
+              {selectedMaterial?.type === "image" && (
+                <ImageIcon className="h-5 w-5 text-emerald-500" />
+              )}
+              {selectedMaterial?.title}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
+            {selectedMaterial?.type === "note" && (
+              <div className="rounded-xl border border-border bg-secondary/15 p-4 whitespace-pre-wrap text-sm text-foreground leading-relaxed font-mono">
+                {selectedMaterial.value}
+              </div>
+            )}
+
+            {selectedMaterial?.type === "image" && (
+              <div className="rounded-xl border border-border bg-secondary/15 p-2 flex flex-col items-center justify-center">
+                <img
+                  src={selectedMaterial.value}
+                  alt={selectedMaterial.title}
+                  className="max-h-[50vh] object-contain rounded-lg w-full"
+                />
+              </div>
+            )}
+
+            {selectedMaterial?.type === "link" && (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  This is a web link. You can open it in a new tab:
+                </p>
+                <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border bg-secondary/15">
+                  <span className="text-xs text-primary truncate max-w-[320px]">
+                    {selectedMaterial.value}
+                  </span>
+                  <a
+                    href={selectedMaterial.value}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="gradient-primary text-primary-foreground font-semibold rounded-xl shadow-glow cursor-pointer text-xs px-3 py-1.5 inline-flex items-center gap-1 shrink-0"
+                  >
+                    Go to URL
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="pt-2 border-t border-border/40 flex items-center justify-between gap-3">
+            {selectedMaterial && (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  onDeleteMaterial(selectedMaterial.id);
+                  setSelectedMaterial(null);
+                  toast.success("Resource removed");
+                }}
+                className="rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+              >
+                <Trash2 className="h-4 w-4" /> Delete Resource
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => setSelectedMaterial(null)}
+              className="rounded-xl cursor-pointer"
+            >
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

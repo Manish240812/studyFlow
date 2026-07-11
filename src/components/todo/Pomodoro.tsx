@@ -35,8 +35,8 @@ interface Props {
 
 const SOUND_URLS = {
   none: "",
-  rain: "https://www.soundjay.com/nature/sounds/rain-07.mp3",
-  cafe: "https://www.soundjay.com/misc/sounds/coffee-shop-1.mp3",
+  rain: "https://raw.githubusercontent.com/HeaLthyDrugs/justwrite/master/public/sounds/ambient/rain.mp3",
+  forest: "https://raw.githubusercontent.com/HeaLthyDrugs/justwrite/master/public/sounds/ambient/forest.mp3",
   lofi: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
 };
 
@@ -108,14 +108,25 @@ export function Pomodoro({ onAddStudyLog }: Props) {
 
   // Audio lifecycle sync
   useEffect(() => {
-    if (!audioRef.current) return;
-    if (selectedSound !== "none" && isPlayingSound) {
-      audioRef.current.volume = volume;
-      audioRef.current.play().catch(() => {
-        setIsPlayingSound(false);
-      });
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const url = SOUND_URLS[selectedSound];
+    if (url && isPlayingSound) {
+      if (audio.src !== url) {
+        audio.src = url;
+        audio.load();
+      }
+      audio.volume = volume;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.error("Audio playback failed:", err);
+          setIsPlayingSound(false);
+        });
+      }
     } else {
-      audioRef.current.pause();
+      audio.pause();
     }
   }, [selectedSound, isPlayingSound, volume]);
 
@@ -185,7 +196,7 @@ export function Pomodoro({ onAddStudyLog }: Props) {
       )}
     >
       {/* Hidden audio element for safe HTML5 playback */}
-      <audio ref={audioRef} src={SOUND_URLS[selectedSound] || undefined} loop />
+      <audio ref={audioRef} loop />
 
       {/* Header bar controls */}
       <div
@@ -391,15 +402,15 @@ export function Pomodoro({ onAddStudyLog }: Props) {
             </h4>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                {(["none", "rain", "cafe", "lofi"] as const).map((source) => {
+                {(["none", "rain", "forest", "lofi"] as const).map((source) => {
                   const isActive = selectedSound === source;
                   const label =
                     source === "none"
                       ? "🔇 None"
                       : source === "rain"
                         ? "🌧️ Cozy Rain"
-                        : source === "cafe"
-                          ? "☕ Cozy Cafe"
+                        : source === "forest"
+                          ? "🌲 Forest Nature"
                           : "🎵 Study Beats";
                   return (
                     <Button
