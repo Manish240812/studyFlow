@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import type { Task, UserProfile, StudyLog, Subject, SubjectMaterial } from "./types";
 
 const STORAGE_KEY = "student-todo:tasks:v1";
@@ -9,6 +10,68 @@ const PROFILE_KEY = "student-todo:profile:v1";
 const STUDY_LOGS_KEY = "student-todo:studylogs:v1";
 const BUDGETS_KEY = "student-todo:budgets:v1";
 const MATERIALS_KEY = "student-todo:materials:v1";
+const GAMIFICATION_KEY = "student-todo:gamification:v1";
+
+export interface GamificationData {
+  xp: number;
+  level: number;
+  unlockedBadges: string[];
+}
+
+export const BADGES: Record<
+  string,
+  { title: string; description: string; icon: string; requirement: string }
+> = {
+  "first-task": {
+    title: "First Step",
+    description: "Completed your very first task in StudyFlow!",
+    icon: "🎯",
+    requirement: "Complete 1 task",
+  },
+  "streak-3": {
+    title: "Streak Starter",
+    description: "Maintained a 3-day study streak!",
+    icon: "🔥",
+    requirement: "Reach a 3-day streak",
+  },
+  "streak-7": {
+    title: "Streak Master",
+    description: "Maintained a 7-day study streak! Unstoppable!",
+    icon: "⚡",
+    requirement: "Reach a 7-day streak",
+  },
+  "tasks-10": {
+    title: "Productivity Machine",
+    description: "Completed 10 tasks! You are on fire!",
+    icon: "🏆",
+    requirement: "Complete 10 tasks",
+  },
+  "focus-1": {
+    title: "Focus Knight",
+    description: "Completed your first Pomodoro focus session!",
+    icon: "🛡️",
+    requirement: "Complete 1 focus session",
+  },
+  "focus-5": {
+    title: "Deep Focus Sage",
+    description: "Completed 5 deep focus sessions!",
+    icon: "🧘",
+    requirement: "Complete 5 focus sessions",
+  },
+  "planner": {
+    title: "Planner Guru",
+    description: "Scheduled a task or study log using the Weekly Planner!",
+    icon: "📅",
+    requirement: "Plan or update a task",
+  },
+};
+
+const DEFAULT_GAMIFICATION: GamificationData = {
+  xp: 0,
+  level: 1,
+  unlockedBadges: [],
+};
+
 
 export interface Settings {
   animations: boolean;
@@ -259,4 +322,68 @@ export function useSubjectMaterials() {
   );
 
   return { materials, hydrated, addMaterial, deleteMaterial };
+}
+
+export function useGamification() {
+  const [data, setData, hydrated] = useLocalStorageState<GamificationData>(
+    GAMIFICATION_KEY,
+    DEFAULT_GAMIFICATION,
+  );
+
+  const addXp = useCallback(
+    (amount: number) => {
+      setData((prev: GamificationData) => {
+        const nextXp = prev.xp + amount;
+        const nextLevel = Math.floor(nextXp / 500) + 1;
+
+        if (nextLevel > prev.level) {
+          setTimeout(() => {
+            toast.success(`🎉 LEVEL UP! You reached Level ${nextLevel}!`, {
+              description: "Keep up the fantastic work! 🚀",
+              duration: 5000,
+            });
+          }, 500);
+        }
+
+        return {
+          ...prev,
+          xp: nextXp,
+          level: nextLevel,
+        };
+      });
+    },
+    [setData],
+  );
+
+  const unlockBadge = useCallback(
+    (badgeId: string) => {
+      setData((prev: GamificationData) => {
+        if (prev.unlockedBadges.includes(badgeId)) return prev;
+
+        setTimeout(() => {
+          const badge = BADGES[badgeId];
+          toast.success(`🏆 BADGE UNLOCKED: ${badge?.title || badgeId}!`, {
+            description: badge?.description || "",
+            icon: badge?.icon || "🏆",
+            duration: 6000,
+          });
+        }, 500);
+
+        return {
+          ...prev,
+          unlockedBadges: [...prev.unlockedBadges, badgeId],
+        };
+      });
+    },
+    [setData],
+  );
+
+  return {
+    xp: data.xp,
+    level: data.level,
+    unlockedBadges: data.unlockedBadges,
+    addXp,
+    unlockBadge,
+    hydrated,
+  };
 }

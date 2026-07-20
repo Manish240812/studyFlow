@@ -33,14 +33,28 @@ interface Props {
   onAddStudyLog: (log: StudyLog) => void;
 }
 
-const SOUND_URLS = {
-  none: "",
-  rain: "https://raw.githubusercontent.com/HeaLthyDrugs/justwrite/master/public/sounds/ambient/rain.mp3",
-  forest: "https://raw.githubusercontent.com/HeaLthyDrugs/justwrite/master/public/sounds/ambient/forest.mp3",
-  lofi: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+const CHANNELS = {
+  rain: {
+    label: "Cozy Rain",
+    url: "https://raw.githubusercontent.com/HeaLthyDrugs/justwrite/master/public/sounds/ambient/rain.mp3",
+    icon: "🌧️",
+  },
+  forest: {
+    label: "Deep Forest",
+    url: "https://raw.githubusercontent.com/HeaLthyDrugs/justwrite/master/public/sounds/ambient/forest.mp3",
+    icon: "🌲",
+  },
+  lofi: {
+    label: "Lofi Beats",
+    url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    icon: "🎸",
+  },
+  white: {
+    label: "White Noise",
+    url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    icon: "💨",
+  },
 };
-
-// Presets removed as user decides time manually
 
 export function Pomodoro({ onAddStudyLog }: Props) {
   const [workMinutes, setWorkMinutes] = useState(25);
@@ -50,16 +64,25 @@ export function Pomodoro({ onAddStudyLog }: Props) {
   const [running, setRunning] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<Subject>("Computer Science");
 
-  // Ambient sound states
-  const [selectedSound, setSelectedSound] = useState<keyof typeof SOUND_URLS>("none");
-  const [isPlayingSound, setIsPlayingSound] = useState(false);
-  const [volume, setVolume] = useState(0.5);
+  // Multi-channel sound deck states
+  const [activeChannels, setActiveChannels] = useState<Record<string, boolean>>({
+    rain: false,
+    forest: false,
+    lofi: false,
+    white: false,
+  });
+  const [channelVolumes, setChannelVolumes] = useState<Record<string, number>>({
+    rain: 0.5,
+    forest: 0.5,
+    lofi: 0.5,
+    white: 0.5,
+  });
 
   // Screen states
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const timerRef = useRef<number | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audiosRef = useRef<Record<string, HTMLAudioElement>>({});
 
   // Update remaining time when presets change
   useEffect(() => {
@@ -72,7 +95,7 @@ export function Pomodoro({ onAddStudyLog }: Props) {
   useEffect(() => {
     if (!running) return;
     timerRef.current = window.setInterval(() => {
-      setRemaining((r) => {
+      setRemaining((r: number) => {
         if (r <= 1) {
           const nextMode = mode === "work" ? "break" : "work";
           const nextTotal = nextMode === "work" ? workMinutes : breakMinutes;
@@ -106,58 +129,56 @@ export function Pomodoro({ onAddStudyLog }: Props) {
     };
   }, [running, mode, workMinutes, breakMinutes, selectedSubject, onAddStudyLog]);
 
-  // Audio lifecycle sync
+  // Multi-channel Audio lifecycle sync
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const url = SOUND_URLS[selectedSound];
-    if (url && isPlayingSound) {
-      if (audio.src !== url) {
-        audio.src = url;
-        audio.load();
-      }
-      audio.volume = volume;
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.error("Audio playback failed:", err);
-          setIsPlayingSound(false);
-        });
-      }
-    } else {
-      audio.pause();
+    if (typeof window !== "undefined") {
+      Object.entries(CHANNELS).forEach(([id, ch]) => {
+        if (!audiosRef.current[id]) {
+          const audio = new Audio(ch.url);
+          audio.loop = true;
+          audiosRef.current[id] = audio;
+        }
+      });
     }
-  }, [selectedSound, isPlayingSound, volume]);
+    return () => {
+      (Object.values(audiosRef.current) as HTMLAudioElement[]).forEach(
+        (audio) => {
+          audio.pause();
+        },
+      );
+    };
+  }, []);
 
-  // Update volume dynamically
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
+    Object.keys(CHANNELS).forEach((id) => {
+      const audio = audiosRef.current[id];
+      if (!audio) return;
+
+      const isActive = activeChannels[id];
+      audio.volume = channelVolumes[id];
+
+      if (isActive) {
+        if (audio.paused) {
+          audio.play().catch((err: any) => {
+            console.error("Playback error:", err);
+            setActiveChannels((prev: Record<string, boolean>) => ({
+              ...prev,
+              [id]: false,
+            }));
+          });
+        }
+      } else {
+        if (!audio.paused) {
+          audio.pause();
+        }
+      }
+    });
+  }, [activeChannels, channelVolumes]);
 
   const total = (mode === "work" ? workMinutes : breakMinutes) * 60;
   const pct = ((total - remaining) / total) * 100;
   const mins = String(Math.floor(remaining / 60)).padStart(2, "0");
   const secs = String(remaining % 60).padStart(2, "0");
-
-  const toggleSound = () => {
-    if (selectedSound === "none") {
-      toast.error("Please select an ambient sound source first.");
-      return;
-    }
-    setIsPlayingSound((prev) => !prev);
-  };
-
-  const selectSoundSource = (source: keyof typeof SOUND_URLS) => {
-    setSelectedSound(source);
-    if (source === "none") {
-      setIsPlayingSound(false);
-    } else {
-      setIsPlayingSound(true);
-    }
-  };
 
   const handleReset = () => {
     setRunning(false);
@@ -195,8 +216,6 @@ export function Pomodoro({ onAddStudyLog }: Props) {
           "fixed inset-0 z-50 bg-background/95 backdrop-blur-md flex flex-col items-center justify-center p-6 space-y-8 animate-fade-in",
       )}
     >
-      {/* Hidden audio element for safe HTML5 playback */}
-      <audio ref={audioRef} loop />
 
       {/* Header bar controls */}
       <div
@@ -337,7 +356,7 @@ export function Pomodoro({ onAddStudyLog }: Props) {
                   type="number"
                   min={1}
                   value={workMinutes}
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     const val = parseInt(e.target.value) || 1;
                     setWorkMinutes(val);
                     if (!running && mode === "work") setRemaining(val * 60);
@@ -353,7 +372,7 @@ export function Pomodoro({ onAddStudyLog }: Props) {
                   type="number"
                   min={1}
                   value={breakMinutes}
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     const val = parseInt(e.target.value) || 1;
                     setBreakMinutes(val);
                     if (!running && mode === "break") setRemaining(val * 60);
@@ -372,7 +391,7 @@ export function Pomodoro({ onAddStudyLog }: Props) {
             <div className="space-y-2">
               <Select
                 value={selectedSubject}
-                onValueChange={(v) => setSelectedSubject(v as Subject)}
+                onValueChange={(v: string) => setSelectedSubject(v as Subject)}
                 disabled={running}
               >
                 <SelectTrigger className="h-9 rounded-xl text-xs">
@@ -396,66 +415,71 @@ export function Pomodoro({ onAddStudyLog }: Props) {
           </div>
 
           {/* Soundscapes ambient console */}
-          <div className="glass rounded-2xl p-4 space-y-3 border border-border/60">
+          <div className="glass rounded-2xl p-4 space-y-4 border border-border/60">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-              <Music className="h-3 w-3 text-primary" /> Focus Soundscape
+              <Music className="h-3 w-3 text-primary" /> Focus Soundscapes Mixer
             </h4>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                {(["none", "rain", "forest", "lofi"] as const).map((source) => {
-                  const isActive = selectedSound === source;
-                  const label =
-                    source === "none"
-                      ? "🔇 None"
-                      : source === "rain"
-                        ? "🌧️ Cozy Rain"
-                        : source === "forest"
-                          ? "🌲 Forest Nature"
-                          : "🎵 Study Beats";
-                  return (
-                    <Button
-                      key={source}
-                      size="sm"
-                      variant={isActive ? "default" : "outline"}
-                      onClick={() => selectSoundSource(source)}
-                      className="text-2xs h-9 rounded-xl font-medium cursor-pointer"
-                    >
-                      {label}
-                    </Button>
-                  );
-                })}
-              </div>
-
-              {selectedSound !== "none" && (
-                <div className="space-y-2 border-t border-border/30 pt-3">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1.5">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={toggleSound}
-                        className="h-6 w-6 rounded-md hover:bg-secondary cursor-pointer"
-                      >
-                        {isPlayingSound ? (
-                          <Volume2 className="h-3.5 w-3.5 text-primary" />
-                        ) : (
-                          <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
-                        )}
-                      </Button>
-                      Volume
-                    </span>
-                    <span>{Math.round(volume * 100)}%</span>
+            <div className="space-y-3.5">
+              {Object.entries(CHANNELS).map(([id, ch]) => {
+                const isActive = activeChannels[id];
+                const volume = channelVolumes[id];
+                return (
+                  <div
+                    key={id}
+                    className="space-y-2 border-b border-border/10 pb-3 last:border-0 last:pb-0"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <Button
+                          size="sm"
+                          variant={isActive ? "default" : "outline"}
+                          onClick={() => {
+                            setActiveChannels((prev: Record<string, boolean>) => ({
+                              ...prev,
+                              [id]: !prev[id],
+                            }));
+                          }}
+                          className={cn(
+                            "text-2xs px-2.5 py-1.5 h-8 rounded-xl font-bold cursor-pointer transition-all duration-300",
+                            isActive
+                              ? "shadow-glow bg-primary text-primary-foreground"
+                              : "hover:border-primary/50",
+                          )}
+                        >
+                          <span className="mr-1">{ch.icon}</span>{" "}
+                          {isActive ? "Playing" : "Muted"}
+                        </Button>
+                        <span className="text-xs font-semibold text-foreground">
+                          {ch.label}
+                        </span>
+                      </div>
+                      {isActive && (
+                        <span className="text-[10px] font-bold text-muted-foreground">
+                          {Math.round(volume * 100)}%
+                        </span>
+                      )}
+                    </div>
+                    {isActive && (
+                      <div className="flex items-center gap-2.5 pl-2">
+                        <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Slider
+                          min={0}
+                          max={1}
+                          step={0.05}
+                          value={[volume]}
+                          onValueChange={(val: number[]) => {
+                            setChannelVolumes((prev: Record<string, number>) => ({
+                              ...prev,
+                              [id]: val[0],
+                            }));
+                          }}
+                          className="cursor-pointer"
+                        />
+                      </div>
+                    )}
                   </div>
-                  <Slider
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={[volume]}
-                    onValueChange={(val) => setVolume(val[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
-              )}
+                );
+              })}
             </div>
           </div>
 
