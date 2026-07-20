@@ -15,6 +15,8 @@ interface AppHeaderProps {
   setTheme: (theme: ThemeMode) => void;
   initials: string;
   onOpenProfile: () => void;
+  level?: number;
+  xp?: number;
 }
 
 export function AppHeader({
@@ -23,6 +25,8 @@ export function AppHeader({
   setTheme,
   initials,
   onOpenProfile,
+  level = 1,
+  xp = 0,
 }: AppHeaderProps) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background/70 px-4 py-3 shadow-sm backdrop-blur sm:px-5">
@@ -40,6 +44,25 @@ export function AppHeader({
         </button>
       </div>
       <div className="flex items-center gap-2">
+        {/* Level and XP indicator */}
+        <div className="hidden items-center gap-2.5 rounded-full border border-border/70 bg-card/85 px-3 py-1.5 shadow-sm sm:flex">
+          <div className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+            ⚡
+          </div>
+          <div className="text-left leading-none">
+            <p className="text-xs font-bold text-foreground">Lvl {level}</p>
+            <div className="mt-1.5 h-1 w-20 rounded-full bg-secondary overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-primary to-sky-500 transition-all duration-500"
+                style={{ width: `${(xp % 500) / 5}%` }}
+              />
+            </div>
+          </div>
+          <span className="text-[10px] font-bold text-muted-foreground whitespace-nowrap">
+            {xp % 500} / 500 XP
+          </span>
+        </div>
+
         {/* Paintbrush Theme Selector Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

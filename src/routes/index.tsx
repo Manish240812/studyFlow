@@ -21,12 +21,15 @@ import {
   Sun,
   X,
   Palette,
+  Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dashboard } from "@/components/todo/Dashboard";
 import { TaskForm } from "@/components/todo/TaskForm";
 import { TaskList } from "@/components/todo/TaskList";
+import { KanbanBoard } from "@/components/todo/KanbanBoard";
+import { AIBuddy } from "@/components/todo/AIBuddy";
 import { FiltersBar, type FilterKey, type SortKey } from "@/components/todo/FiltersBar";
 import { StatsPanel } from "@/components/todo/StatsPanel";
 import { Pomodoro } from "@/components/todo/Pomodoro";
@@ -42,9 +45,10 @@ import {
   useBudgets,
   useStudyLogs,
   useSubjectMaterials,
+  useGamification,
   type ThemeMode,
 } from "@/lib/todo/storage";
-import { isDueThisWeek, isDueToday, isOverdue, type Task } from "@/lib/todo/types";
+import { isDueThisWeek, isDueToday, isOverdue, type Task, type StudyLog } from "@/lib/todo/types";
 import { QUOTES } from "@/lib/todo/quotes";
 import { WeeklyCalendar } from "@/components/todo/WeeklyCalendar";
 import { TimeBudgetPanel } from "@/components/todo/TimeBudgetPanel";
@@ -69,6 +73,7 @@ function Index() {
   const { tasks, addTask, updateTask, deleteTask, setAllTasks } = useTasks();
   const { theme, setTheme, toggle } = useTheme();
   const [settings, setSettings] = useSettings();
+  const { xp, level, unlockedBadges, addXp, unlockBadge } = useGamification();
   const [showLanding, setShowLanding] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -80,6 +85,17 @@ function Index() {
     }
   }, []);
   const { streak, completedToday } = useStreak(tasks);
+
+  // Auto unlock streak badges
+  useEffect(() => {
+    if (streak >= 3) {
+      unlockBadge("streak-3");
+    }
+    if (streak >= 7) {
+      unlockBadge("streak-7");
+    }
+  }, [streak, unlockBadge]);
+
   const [profile, setProfile] = useProfile();
   const [budgets, updateBudget] = useBudgets();
   const { studyLogs, addStudyLog, deleteStudyLog, setAllStudyLogs } = useStudyLogs();
@@ -89,8 +105,9 @@ function Index() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [sort, setSort] = useState<SortKey>("due");
   const [editing, setEditing] = useState<Task | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [activeTab, setActiveTab] = useState<
-    "tasks" | "calendar" | "budget" | "stats" | "resources" | "focus"
+    "tasks" | "calendar" | "budget" | "stats" | "resources" | "focus" | "buddy"
   >("tasks");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -305,8 +322,41 @@ function Index() {
       completed: nextCompleted,
       completedAt: nextCompleted ? new Date().toISOString() : undefined,
     });
+    if (nextCompleted) {
+      addXp(100);
+      const completedCount = tasks.filter((x) => x.completed).length + 1;
+      if (completedCount === 1) {
+        unlockBadge("first-task");
+      }
+      if (completedCount === 10) {
+        unlockBadge("tasks-10");
+      }
+    } else {
+      addXp(-100);
+    }
     toast.success(nextCompleted ? "Task completed 🎉" : "Task restored");
   };
+
+  const handleFocusStudyLog = useCallback(
+    (log: StudyLog) => {
+      addStudyLog(log);
+      const duration = log.duration || 0;
+      if (duration > 0) {
+        addXp(duration * 10);
+        const focusLogsCount =
+          studyLogs.filter(
+            (l) => l.notes?.includes("Focus") || l.notes?.includes("Pomodoro"),
+          ).length + 1;
+        if (focusLogsCount === 1) {
+          unlockBadge("focus-1");
+        }
+        if (focusLogsCount === 5) {
+          unlockBadge("focus-5");
+        }
+      }
+    },
+    [addStudyLog, addXp, studyLogs, unlockBadge],
+  );
 
   const onDelete = (id: string) => {
     deleteTask(id);
@@ -375,6 +425,8 @@ function Index() {
             setTheme={setTheme}
             initials={initials}
             onOpenProfile={() => setIsProfileOpen(true)}
+            level={level}
+            xp={xp}
           />
 
           <ProfileModal
@@ -384,6 +436,9 @@ function Index() {
             setProfile={setProfile}
             initials={initials}
             onOpenSettings={() => setIsSettingsOpen(true)}
+            level={level}
+            xp={xp}
+            unlockedBadges={unlockedBadges}
           />
 
           <SettingsModal
@@ -416,7 +471,16 @@ function Index() {
             <Tabs
               value={activeTab}
               onValueChange={(v) =>
-                setActiveTab(v as "tasks" | "calendar" | "budget" | "stats" | "resources" | "focus" | "focus")
+                setActiveTab(
+                  v as
+                    | "tasks"
+                    | "calendar"
+                    | "budget"
+                    | "stats"
+                    | "resources"
+                    | "focus"
+                    | "buddy",
+                )
               }
               className="space-y-6"
             >
@@ -457,6 +521,12 @@ function Index() {
                 >
                   <Timer className="mr-2 h-4 w-4" /> Focus Timer
                 </TabsTrigger>
+                <TabsTrigger
+                  value="buddy"
+                  className="rounded-lg px-4 py-2.5 text-sm font-medium transition data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm cursor-pointer"
+                >
+                  <Brain className="mr-2 h-4 w-4" /> AI Study Buddy
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="tasks" className="space-y-6 outline-none">
@@ -494,20 +564,61 @@ function Index() {
                         onSort={setSort}
                         counts={counts}
                       />
-                      <TaskList
-                        tasks={visibleTasks}
-                        allTasks={tasks}
-                        setAllTasks={setAllTasks}
-                        onToggle={onToggle}
-                        onDelete={onDelete}
-                        onEdit={(t) => {
-                          setEditing(t);
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        }}
-                        onDuplicate={onDuplicate}
-                        onPin={onPin}
-                        onFavorite={onFavorite}
-                      />
+                      <div className="flex items-center justify-between border-b border-border/20 pb-3">
+                        <h3 className="text-sm font-bold text-foreground">
+                          {viewMode === "list" ? "Task List" : "Kanban Board"}
+                        </h3>
+                        <div className="flex items-center gap-1 bg-secondary/40 p-1 rounded-xl border border-border/40">
+                          <button
+                            type="button"
+                            onClick={() => setViewMode("list")}
+                            className={cn(
+                              "px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer",
+                              viewMode === "list"
+                                ? "bg-background text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground",
+                            )}
+                          >
+                            List View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setViewMode("kanban")}
+                            className={cn(
+                              "px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer",
+                              viewMode === "kanban"
+                                ? "bg-background text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground",
+                            )}
+                          >
+                            Kanban Board
+                          </button>
+                        </div>
+                      </div>
+
+                      {viewMode === "list" ? (
+                        <TaskList
+                          tasks={visibleTasks}
+                          allTasks={tasks}
+                          setAllTasks={setAllTasks}
+                          onToggle={onToggle}
+                          onDelete={onDelete}
+                          onEdit={(t) => {
+                            setEditing(t);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                          onDuplicate={onDuplicate}
+                          onPin={onPin}
+                          onFavorite={onFavorite}
+                        />
+                      ) : (
+                        <KanbanBoard
+                          tasks={visibleTasks}
+                          onToggle={onToggle}
+                          onDelete={onDelete}
+                          onPin={onPin}
+                        />
+                      )}
                     </div>
                     <aside className="space-y-4">
                       <UpcomingPanel tasks={tasks} />
@@ -533,8 +644,14 @@ function Index() {
                 >
                   <WeeklyCalendar
                     tasks={tasks}
-                    onAddTask={addTask}
-                    onUpdateTask={updateTaskAndSyncLogs}
+                    onAddTask={(t) => {
+                      addTask(t);
+                      unlockBadge("planner");
+                    }}
+                    onUpdateTask={(id, patch) => {
+                      updateTaskAndSyncLogs(id, patch);
+                      unlockBadge("planner");
+                    }}
                     onDeleteTask={onDelete}
                   />
                 </motion.div>
@@ -550,7 +667,7 @@ function Index() {
                     studyLogs={studyLogs}
                     budgets={budgets}
                     onUpdateBudget={updateBudget}
-                    onAddStudyLog={addStudyLog}
+                    onAddStudyLog={handleFocusStudyLog}
                     onDeleteStudyLog={deleteStudyLog}
                   />
                 </motion.div>
@@ -586,7 +703,17 @@ function Index() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
                 >
-                  <Pomodoro onAddStudyLog={addStudyLog} />
+                  <Pomodoro onAddStudyLog={handleFocusStudyLog} />
+                </motion.div>
+              </TabsContent>
+
+              <TabsContent value="buddy" className="outline-none">
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  <AIBuddy tasks={tasks} studyLogs={studyLogs} streak={streak} />
                 </motion.div>
               </TabsContent>
             </Tabs>
