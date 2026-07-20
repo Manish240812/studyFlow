@@ -26,7 +26,9 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: |
+          npm run build
+          cp .output/public/studyFlow/index.html .output/public/studyFlow/404.html
         env:
           NITRO_PRESET: github-pages
           BASE_URL: /studyFlow/
@@ -35,4 +37,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .output/public
+          publish_dir: .output/public/studyFlow

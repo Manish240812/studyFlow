@@ -289,3 +289,24 @@
     letter-spacing: -0.02em;
   }
 }
+
+@keyframes sound-bar-bounce {
+  0%, 100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.animate-sound-bar-1 {
+  animation: sound-bar-bounce 1s ease-in-out infinite;
+}
+.animate-sound-bar-2 {
+  animation: sound-bar-bounce 0.7s ease-in-out infinite;
+  animation-delay: 0.15s;
+}
+.animate-sound-bar-3 {
+  animation: sound-bar-bounce 1.1s ease-in-out infinite;
+  animation-delay: 0.3s;
+}

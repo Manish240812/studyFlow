@@ -285,13 +285,18 @@ Always give practical, clear, structured study tips. Use markdown, emojis, bulle
               <div
                 key={idx}
                 className={cn(
-                  "flex",
+                  "flex items-start gap-2.5",
                   isAI ? "justify-start" : "justify-end",
                 )}
               >
+                {isAI && (
+                  <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-xl bg-primary/15 border border-primary/25 text-primary shadow-sm">
+                    <Sparkles className="h-3.5 w-3.5" />
+                  </div>
+                )}
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-2xl p-3.5 text-sm whitespace-pre-wrap leading-relaxed shadow-sm",
+                    "max-w-[78%] rounded-2xl p-3.5 text-sm whitespace-pre-wrap leading-relaxed shadow-sm",
                     isAI
                       ? "bg-card border border-border/50 text-foreground rounded-tl-none"
                       : "bg-primary text-primary-foreground rounded-tr-none font-medium",
@@ -299,15 +304,23 @@ Always give practical, clear, structured study tips. Use markdown, emojis, bulle
                 >
                   {m.content}
                 </div>
+                {!isAI && (
+                  <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-xl bg-secondary border border-border/40 text-foreground text-xs font-bold font-display shadow-sm">
+                    ME
+                  </div>
+                )}
               </div>
             );
           })}
           {loading && (
-            <div className="flex justify-start">
-              <div className="bg-card border border-border/50 text-foreground rounded-2xl rounded-tl-none p-4 flex items-center gap-2 shadow-sm">
-                <div className="h-2 w-2 bg-primary rounded-full animate-bounce" />
-                <div className="h-2 w-2 bg-primary rounded-full animate-bounce delay-100" />
-                <div className="h-2 w-2 bg-primary rounded-full animate-bounce delay-200" />
+            <div className="flex items-start gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-xl bg-primary/15 border border-primary/25 text-primary shadow-sm">
+                <Sparkles className="h-3.5 w-3.5 animate-spin duration-3000" />
+              </div>
+              <div className="bg-card border border-border/50 text-foreground rounded-2xl rounded-tl-none p-3.5 flex items-center gap-1.5 shadow-sm">
+                <div className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce" />
+                <div className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.15s]" />
+                <div className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.3s]" />
               </div>
             </div>
           )}

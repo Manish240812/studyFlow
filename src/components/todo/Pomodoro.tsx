@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Pause,
@@ -304,7 +304,7 @@ export function Pomodoro({ onAddStudyLog }: Props) {
           <div className="mt-8 flex items-center justify-center gap-3">
             <Button
               size="lg"
-              onClick={() => setRunning((r) => !r)}
+              onClick={() => setRunning(!running)}
               className="gradient-primary text-primary-foreground font-semibold rounded-2xl shadow-glow px-6 h-12 cursor-pointer text-sm"
             >
               {running ? (
@@ -449,8 +449,15 @@ export function Pomodoro({ onAddStudyLog }: Props) {
                           <span className="mr-1">{ch.icon}</span>{" "}
                           {isActive ? "Playing" : "Muted"}
                         </Button>
-                        <span className="text-xs font-semibold text-foreground">
+                        <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                           {ch.label}
+                          {isActive && (
+                            <span className="flex items-end gap-[2px] h-3 w-4 pb-[1px] shrink-0">
+                              <span className="w-[1.5px] h-full bg-primary rounded-[1px] origin-bottom animate-sound-bar-1" />
+                              <span className="w-[1.5px] h-full bg-primary rounded-[1px] origin-bottom animate-sound-bar-2" />
+                              <span className="w-[1.5px] h-full bg-primary rounded-[1px] origin-bottom animate-sound-bar-3" />
+                            </span>
+                          )}
                         </span>
                       </div>
                       {isActive && (
