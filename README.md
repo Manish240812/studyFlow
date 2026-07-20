@@ -11,7 +11,7 @@
 
 Welcome to **StudyFlow**, a gamified, modern learning ecosystem. Far beyond a simple checklist, StudyFlow combines strict scheduling, interactive sound engineering, automatic progress analysis, and client-side LLM modules into a cohesive, fluid workspace.
 
-🌐 **Production Link:** [https://Manish240812.github.io/studyFlow/](https://Manish240812.github.io/studyFlow/)
+🌐 **Production Link:
 
 ---
 
